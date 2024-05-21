@@ -1,1 +1,2 @@
-export * from './auth.valid'
+export * from "./auth.valid";
+export * from "./user.valid";

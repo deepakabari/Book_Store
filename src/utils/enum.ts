@@ -1,16 +1,16 @@
 export const roles = [
     {
         id: 2,
-        name: 'seller',
+        name: "seller",
     },
     {
         id: 3,
-        name: 'buyer',
+        name: "buyer",
     },
 ];
 
 export enum Status {
-    Pending = 'Pending',
-    Active = 'Active',
-    Inactive = 'Inactive',
+    Pending = "Pending",
+    Active = "Active",
+    Inactive = "Inactive",
 }

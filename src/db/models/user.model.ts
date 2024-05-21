@@ -1,6 +1,6 @@
-import { DataTypes } from 'sequelize';
-import { Table, Column, Model, HasMany } from 'sequelize-typescript';
-import { UserAttributes, UserCreationAttributes } from '../../interfaces/index';
+import { DataTypes } from "sequelize";
+import { Table, Column, Model, HasMany } from "sequelize-typescript";
+import { UserAttributes, UserCreationAttributes } from "../../interfaces/index";
 
 @Table({
     timestamps: true,

@@ -1,4 +1,4 @@
-import { Optional } from 'sequelize';
+import { Optional } from "sequelize";
 
 // Define an interface for User attributes
 interface UserAttributes {
@@ -16,6 +16,6 @@ interface UserAttributes {
 }
 
 // Define a type for User creation attributes by making 'id' optional
-type UserCreationAttributes = Optional<UserAttributes, 'id'>;
+type UserCreationAttributes = Optional<UserAttributes, "id">;
 
 export { UserAttributes, UserCreationAttributes };
