@@ -1,0 +1,34 @@
+module.exports = {
+    env: {
+        es2021: true,
+        node: true,
+    },
+    extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"],
+    overrides: [
+        {
+            env: {
+                node: true,
+            },
+            files: [".eslintrc.{js,cjs}"],
+            parserOptions: {
+                sourceType: "script",
+            },
+        },
+    ],
+    parser: "@typescript-eslint/parser",
+    parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+    },
+    plugins: ["@typescript-eslint", "prettier"],
+    rules: {
+        indent: ["error", 4],
+        "linebreak-style": ["error", "windows"],
+        quotes: ["error", "double"],
+        semi: ["error", "always"],
+        "prettier/prettier": ["error"],
+        "@typescript-eslint/no-explicit-any": "error",
+        "@typescript-eslint/indent": ["error", 4],
+        "no-console": true,
+    },
+};
