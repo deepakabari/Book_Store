@@ -10,6 +10,8 @@ const messageConstant = {
     USER_NOT_EXIST: "User not exist on this email",
     USER_EXIST: "User already exist. Please login!",
     USER_CREATED: "User created successfully",
+    USER_UPDATED: "User updated successfully",
+    USER_DELETED: "User deleted successfully",
     USER_CREATION_FAILED: "User creation failed",
     BOOK_CREATION_FAILED: "Book creation failed",
     BOOK_CREATED: "Book created successfully",
@@ -25,7 +27,7 @@ const messageConstant = {
     FILE_NOT_UPLOADED: "Please Upload the file with valid extension(.png, .jpg, .jpeg)",
     WRONG_PASSWORD: "Wrong password",
     NOT_AUTHORIZED: "Not authorized",
-
+    DELETE_NOT_AUTHORIZED: "You are not authorized to delete this user.",
     RESET_EMAIL_SENT: "Reset email sent successfully",
     RESET_EMAIL_FAILED: "Reset email failed",
     PASSWORD_RESET: "Password reset successfully",
