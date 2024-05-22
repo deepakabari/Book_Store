@@ -1,6 +1,6 @@
-import { createTransport, SentMessageInfo } from 'nodemailer';
-import dotenv from 'dotenv';
-import { logger } from './logger';
+import { createTransport, SentMessageInfo } from "nodemailer";
+import dotenv from "dotenv";
+import { logger } from "./logger";
 dotenv.config();
 
 interface EmailAuth {
@@ -9,7 +9,7 @@ interface EmailAuth {
 }
 
 const transporter: SentMessageInfo = createTransport({
-    service: 'ethereal',
+    service: "ethereal",
     auth: {
         user: process.env.EMAIL_FROM,
         pass: process.env.EMAIL_PASSWORD,
@@ -46,7 +46,7 @@ export const sendEmail = async ({
                 logger.info(info);
             })
             .catch((err: Error) => {
-                logger.error('Error in sent', err);
+                logger.error("Error in sent", err);
             });
     });
 };

@@ -1,16 +1,16 @@
-import multer, { StorageEngine } from 'multer';
-import { Request } from 'express';
-import { existsSync } from 'fs';
+import multer, { StorageEngine } from "multer";
+import { Request } from "express";
+import { existsSync } from "fs";
 
-const uploadDirectory = './src/public/images';
+const uploadDirectory = "./src/public/images";
 export const fileStorage: StorageEngine = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, uploadDirectory);
     },
     filename: (req, file, cb) => {
         let fileName = file.originalname;
-        const extension = fileName.split('.').pop();
-        const baseFileName = fileName.substring(0, fileName.lastIndexOf('.'));
+        const extension = fileName.split(".").pop();
+        const baseFileName = fileName.substring(0, fileName.lastIndexOf("."));
 
         let counter = 1;
         while (existsSync(`${uploadDirectory}/${fileName}`)) {
@@ -22,11 +22,7 @@ export const fileStorage: StorageEngine = multer.diskStorage({
 });
 
 export const fileFilter = (req: Request, file: any, cb: any) => {
-    if (
-        file.mimetype === 'image/png' ||
-        file.mimetype === 'image/jpg' ||
-        file.mimetype === 'image/jpeg'
-    ) {
+    if (file.mimetype === "image/png" || file.mimetype === "image/jpg" || file.mimetype === "image/jpeg") {
         cb(null, true);
     } else {
         cb(null, false);

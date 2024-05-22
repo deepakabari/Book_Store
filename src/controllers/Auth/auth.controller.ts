@@ -1,14 +1,14 @@
-import { Controller } from '../../interfaces/index';
-import httpCode from '../../constants/http.constant';
-import messageConstant from '../../constants/message.constant';
-import bcrypt from 'bcrypt';
-import { User } from '../../db/models';
-import crypto from 'crypto';
-import jwt from 'jsonwebtoken';
-import linkConstant from '../../constants/link.constant';
-import { compileEmailTemplate } from '../../utils/hbsCompiler';
-import { sendEmail } from '../../utils/email';
-import { Op } from 'sequelize';
+import { Controller } from "../../interfaces/index";
+import httpCode from "../../constants/http.constant";
+import messageConstant from "../../constants/message.constant";
+import bcrypt from "bcrypt";
+import { User } from "../../db/models";
+import crypto from "crypto";
+import jwt from "jsonwebtoken";
+import linkConstant from "../../constants/link.constant";
+import { compileEmailTemplate } from "../../utils/hbsCompiler";
+import { sendEmail } from "../../utils/email";
+import { Op } from "sequelize";
 
 const SECRET = process.env.SECRET;
 const EXPIRESIN = process.env.EXPIRESIN;
@@ -42,10 +42,7 @@ export const login: Controller = async (req, res, next) => {
         }
 
         // Check if password matches
-        const isPasswordMatch = await bcrypt.compare(
-            password,
-            existingUser.password,
-        );
+        const isPasswordMatch = await bcrypt.compare(password, existingUser.password);
 
         // if password matches with the password stored in the database then generate a new access token
         if (isPasswordMatch) {
@@ -107,9 +104,7 @@ export const forgotPassword: Controller = async (req, res, next) => {
         }
 
         // Generate a reset token
-        const hashedToken = crypto
-            .randomBytes(Number(RANDOMBYTES))
-            .toString('hex');
+        const hashedToken = crypto.randomBytes(Number(RANDOMBYTES)).toString("hex");
 
         // Check if the token was successfully generated
         if (!hashedToken) {
@@ -139,11 +134,11 @@ export const forgotPassword: Controller = async (req, res, next) => {
             reset_url: `${RESET_URL}${hashedToken}`,
         };
 
-        const data = await compileEmailTemplate('resetEmail', templateData);
+        const data = await compileEmailTemplate("resetEmail", templateData);
 
         sendEmail({
             to: email,
-            subject: 'Password Reset Email',
+            subject: "Password Reset Email",
             html: data,
         });
 
@@ -195,10 +190,7 @@ export const resetPassword: Controller = async (req, res, next) => {
         }
 
         // Hash the new Password
-        const hashedPassword = await bcrypt.hash(
-            newPassword,
-            Number(ITERATION),
-        );
+        const hashedPassword = await bcrypt.hash(newPassword, Number(ITERATION));
 
         // Update user's password, resetToken, and expireToken
         await User.update(
