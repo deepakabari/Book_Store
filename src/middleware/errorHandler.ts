@@ -1,11 +1,24 @@
-import httpCode from "../constants/http.constant";
-import messageConstant from "../constants/message.constant";
 import { NextFunction, Request, Response } from "express";
 
-export function errorHandler(error: Error, req: Request, res: Response, next: NextFunction) {
-    return res.status(httpCode.INTERNAL_SERVER_ERROR).json({
-        status: httpCode.INTERNAL_SERVER_ERROR,
-        message: messageConstant.INTERNAL_SERVER_ERROR,
-        data: error,
-    });
+// Define a custom error class
+class ErrorHandler extends Error {
+    status: number;
+    message: string;
+
+    constructor(statusCode: number, message: string) {
+        super();
+        this.status = statusCode;
+        this.message = message;
+    }
 }
+
+// Middleware for handling errors
+const handleError = (err: ErrorHandler, req: Request, res: Response, next: NextFunction) => {
+    const { status, message } = err;
+    res.status(status).json({
+        status,
+        message,
+    });
+};
+
+export { ErrorHandler, handleError };

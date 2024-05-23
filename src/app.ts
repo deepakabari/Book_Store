@@ -5,7 +5,7 @@ import { errors } from "celebrate";
 import dotenv from "dotenv";
 import cors from "./middleware/cors";
 import router from "./routes";
-import { errorHandler } from "./middleware/errorHandler";
+import { handleError } from "./middleware/errorHandler";
 import { dbConnection } from "./db/config";
 import { logger } from "./utils/logger";
 dotenv.config();
@@ -28,7 +28,7 @@ app.use("/", (req: Request, res: Response) => {
 });
 
 app.use(errors());
-app.use(errorHandler);
+app.use(handleError);
 
 // Establish database connection
 dbConnection();
