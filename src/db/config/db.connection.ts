@@ -2,7 +2,7 @@ import { Sequelize } from "sequelize-typescript";
 import { logger } from "../../utils/logger";
 import dotenv from "dotenv";
 dotenv.config();
-import { User } from "../models/index";
+import { User, Book, Category } from "../models/index";
 
 // Retrieve database connection details from environment variables
 const dbName = process.env.DB_NAME as string;
@@ -17,7 +17,7 @@ export const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
     define: {
         freezeTableName: true,
     },
-    models: [User],
+    models: [User, Book, Category],
     logging: (msg) => {
         // Log a message when the database connection is established
         if (msg === "Executing (default): SELECT 1+1 AS result") {
