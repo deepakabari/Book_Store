@@ -137,11 +137,6 @@ export const deleteUser: Controller = async (req, res, next) => {
         // Convert the user ID from the request parameters to a number
         const id = +req.params.id;
 
-        // Prevent deletion of users with IDs 1 or 2
-        if (id === 1 || id === 2) {
-            throw new ErrorHandler(httpCode.ACCESS_FORBIDDEN, messageConstant.DELETE_NOT_AUTHORIZED);
-        }
-
         // Find the existing user in the database
         const existingUser = await User.findOne({
             where: { id },
@@ -150,6 +145,10 @@ export const deleteUser: Controller = async (req, res, next) => {
         // If the user does not exist, throw an error
         if (!existingUser) {
             throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.USER_NOT_EXIST);
+        }
+
+        if (existingUser.roleId === 1) {
+            throw new ErrorHandler(httpCode.ACCESS_FORBIDDEN, messageConstant.DELETE_NOT_AUTHORIZED);
         }
 
         // Delete the user from the database

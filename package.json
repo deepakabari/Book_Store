@@ -21,11 +21,13 @@
     },
     "homepage": "https://github.com/deepakabari/Book_Store#readme",
     "dependencies": {
+        "axios": "^1.7.2",
         "bcrypt": "^5.1.1",
         "celebrate": "^15.0.3",
         "dotenv": "^16.4.5",
         "express": "^4.19.2",
         "express-handlebars": "^7.1.2",
+        "json2xls": "^0.1.2",
         "jsonwebtoken": "^9.0.2",
         "multer": "^1.4.5-lts.1",
         "mysql2": "^3.9.7",
@@ -37,6 +39,7 @@
     "devDependencies": {
         "@types/bcrypt": "^5.0.2",
         "@types/express": "^4.17.21",
+        "@types/json2xls": "^0.0.0",
         "@types/jsonwebtoken": "^9.0.6",
         "@types/multer": "^1.4.11",
         "@types/node": "^20.12.12",
