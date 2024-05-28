@@ -12,8 +12,8 @@ router.get("/getCategories", categoryController.getCategories);
 
 router.post("/createCategory", celebrate(CategorySchema.createCategory), categoryController.createCategory);
 
-router.patch("/updateCategory/:id", celebrate(CategorySchema.createCategory), categoryController.updateCategory);
+router.patch("/category/:id", celebrate(CategorySchema.createCategory), categoryController.updateCategory);
 
-router.delete("/deleteCategory/:id", categoryController.deleteCategory);
+router.delete("/category/:id", categoryController.deleteCategory);
 
 export default router;

@@ -1,18 +1,20 @@
+import path from "path";
 import { Sequelize } from "sequelize-typescript";
 import { logger } from "../../utils/logger";
 import dotenv from "dotenv";
 dotenv.config();
 import { User, Book, Category } from "../models/index";
 
-// Retrieve database connection details from environment variables
-const dbName = process.env.DB_NAME as string;
-const dbUser = process.env.DB_USER as string;
-const dbHost = process.env.DB_HOST;
-const dbPassword = process.env.DB_PASSWORD;
+// Retrieve the current environment or default to 'development'
+const env = process.env.NODE_ENV as string;
+
+const config = require(path.join(__dirname + "/" + "config.js"))[env];
+
+const { username, database, host, password } = config;
 
 // Initialize Sequelize with the database credentials
-export const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
-    host: dbHost,
+export const sequelize = new Sequelize(database, username, password, {
+    host: host,
     dialect: "mysql",
     define: {
         freezeTableName: true,
