@@ -15,10 +15,8 @@ router.get("/getBookById/:id", bookController.getBookById);
 
 router.get("/getBooks", bookController.getBooks);
 
-// POST /createBook
 router.post("/createBook", upload.single("image"), celebrate(BookSchema.createBook), bookController.createBook);
 
-// PATCH /updateBook/:id
 router.patch("/book/:id", upload.single("image"), bookController.updateBook);
 
 router.delete("/book/:id", bookController.deleteBook);

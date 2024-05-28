@@ -3,9 +3,10 @@ import path from "path";
 import { Controller } from "../../interfaces";
 import httpCode from "../../constants/http.constant";
 import messageConstant from "../../constants/message.constant";
-import { Book } from "../../db/models";
+import { Book, Category } from "../../db/models";
 import { Order } from "sequelize";
 import { logger } from "../../utils/logger";
+import { ErrorHandler } from "../../middleware/errorHandler";
 
 /**
  * @function getAllBooks
@@ -56,6 +57,14 @@ export const getAllBooks: Controller = async (req, res, next) => {
 export const getBookById: Controller = async (req, res, next) => {
     try {
         const { id } = req.params;
+
+        // Checking if the book already exists in the database
+        const existingBook = await Book.findByPk(id);
+
+        // If book exists, send a BAD_REQUEST error
+        if (!existingBook) {
+            throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.BOOK_NOT_FOUND);
+        }
 
         const getBookById = await Book.findOne({
             where: { id },
@@ -113,20 +122,22 @@ export const createBook: Controller = async (req, res, next) => {
         // Checking if the book already exists in the database
         const existingBook = await Book.findOne({ where: { name } });
 
-        // If book exists, send a BAD_REQUEST response
+        // If book exists, send a BAD_REQUEST error
         if (existingBook) {
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_REQUEST,
-                message: messageConstant.BOOK_ALREADY_EXISTS,
-            });
+            throw new ErrorHandler(httpCode.BAD_REQUEST, messageConstant.BOOK_ALREADY_EXISTS);
         }
 
-        // If no file is uploaded, send a BAD_REQUEST response
+        // Checking if the category exists in the database
+        const category = await Category.findOne({ where: { id: categoryId } });
+
+        // If category not exists, pass a NOT_FOUND error
+        if (!category) {
+            throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.CATEGORY_NOT_EXISTS);
+        }
+
+        // If no file is uploaded, send a NOT_FOUND error
         if (!req.file) {
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_REQUEST,
-                message: messageConstant.FILE_NOT_UPLOADED,
-            });
+            throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.FILE_NOT_UPLOADED);
         }
 
         // Creating a new book entry with the provided details
@@ -139,12 +150,9 @@ export const createBook: Controller = async (req, res, next) => {
             categoryId,
         });
 
-        // If book creation fails, send a BAD_REQUEST response
+        // If book creation fails, send a BAD_REQUEST error
         if (!newBook) {
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.OK,
-                message: messageConstant.BOOK_CREATION_FAILED,
-            });
+            throw new ErrorHandler(httpCode.BAD_REQUEST, messageConstant.BOOK_CREATION_FAILED);
         }
 
         // If book is created successfully, send an OK response with the new book data
@@ -153,7 +161,11 @@ export const createBook: Controller = async (req, res, next) => {
             message: messageConstant.BOOK_CREATED,
             data: newBook,
         });
-    } catch (error) {
+    } catch (error: any) {
+        // If a SequelizeUniqueConstraintError occurs, pass a CONFLICT error
+        if (error.name === "SequelizeUniqueConstraintError") {
+            throw new ErrorHandler(httpCode.CONFLICT, messageConstant.BOOK_NAME_UNIQUE);
+        }
         next(error);
     }
 };
@@ -179,17 +191,19 @@ export const updateBook: Controller = async (req, res, next) => {
 
         // If book is not found, send a BAD_REQUEST response
         if (!existingBook) {
-            return res.status(httpCode.NOT_FOUND).json({
-                status: httpCode.NOT_FOUND,
-                message: messageConstant.BOOK_NOT_FOUND,
-            });
+            throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.BOOK_NOT_FOUND);
         }
 
         if (existingBook.userId !== req.user.id) {
-            return res.status(httpCode.UNAUTHORIZED).json({
-                status: httpCode.UNAUTHORIZED,
-                message: messageConstant.NOT_AUTHORIZED,
-            });
+            throw new ErrorHandler(httpCode.UNAUTHORIZED, messageConstant.NOT_AUTHORIZED);
+        }
+
+        // Checking if the category exists in the database
+        const category = await Category.findOne({ where: { id: categoryId } });
+
+        // If category not exists, pass a NOT_FOUND error
+        if (!category) {
+            throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.CATEGORY_NOT_EXISTS);
         }
 
         if (req.file) {
@@ -216,12 +230,9 @@ export const updateBook: Controller = async (req, res, next) => {
             message: messageConstant.BOOK_UPDATED,
         });
     } catch (error: any) {
-        // If a SequelizeUniqueConstraintError occurs, send a CONFLICT response
+        // If a SequelizeUniqueConstraintError occurs, pass a CONFLICT error
         if (error.name === "SequelizeUniqueConstraintError") {
-            return res.status(httpCode.CONFLICT).json({
-                status: httpCode.CONFLICT,
-                message: messageConstant.BOOK_NAME_UNIQUE,
-            });
+            throw new ErrorHandler(httpCode.CONFLICT, messageConstant.BOOK_NAME_UNIQUE);
         }
         next(error);
     }
@@ -244,17 +255,11 @@ export const deleteBook: Controller = async (req, res, next) => {
 
         // If book is not found, send a BAD_REQUEST response
         if (!existingBook) {
-            return res.status(httpCode.NOT_FOUND).json({
-                status: httpCode.NOT_FOUND,
-                message: messageConstant.BOOK_NOT_FOUND,
-            });
+            throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.BOOK_NOT_FOUND);
         }
 
         if (existingBook.userId !== req.user.id) {
-            return res.status(httpCode.UNAUTHORIZED).json({
-                status: httpCode.UNAUTHORIZED,
-                message: messageConstant.NOT_AUTHORIZED,
-            });
+            throw new ErrorHandler(httpCode.UNAUTHORIZED, messageConstant.NOT_AUTHORIZED);
         }
 
         clearImage(existingBook.image);

@@ -119,14 +119,7 @@ export const updateUser: Controller = async (req, res, next) => {
             status: httpCode.OK,
             message: messageConstant.USER_UPDATED,
         });
-    } catch (error: any) {
-        // If a SequelizeUniqueConstraintError occurs, send a CONFLICT response
-        if (error.name === "SequelizeUniqueConstraintError") {
-            return res.status(httpCode.CONFLICT).json({
-                status: httpCode.CONFLICT,
-                message: messageConstant.BOOK_NAME_UNIQUE,
-            });
-        }
+    } catch (error) {
         next(error);
     }
 };
