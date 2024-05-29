@@ -21,6 +21,7 @@
     },
     "homepage": "https://github.com/deepakabari/Book_Store#readme",
     "dependencies": {
+        "archiver": "^7.0.1",
         "axios": "^1.7.2",
         "bcrypt": "^5.1.1",
         "celebrate": "^15.0.3",
@@ -37,6 +38,7 @@
         "winston": "^3.13.0"
     },
     "devDependencies": {
+        "@types/archiver": "^6.0.2",
         "@types/bcrypt": "^5.0.2",
         "@types/express": "^4.17.21",
         "@types/json2xls": "^0.0.0",

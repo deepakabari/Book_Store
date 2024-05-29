@@ -6,6 +6,7 @@ import axios from "axios";
 import json2xls from "json2xls";
 import { Controller } from "../../interfaces";
 import { ErrorHandler } from "../../middleware/errorHandler";
+import archiver from "archiver";
 
 /**
  * @function viewFile
@@ -28,7 +29,7 @@ export const viewFile: Controller = async (req, res, next) => {
             throw new ErrorHandler(httpCode.BAD_REQUEST, messageConstant.FILE_NOT_FOUND);
         } else {
             // If file exists, set response content type based on file extension
-            res.type(path.extname(filePath));
+            res.type(path.extname(fileName));
 
             // Stream the file to the response
             fs.createReadStream(filePath).pipe(res);
@@ -67,6 +68,58 @@ export const downloadFile: Controller = async (req, res, next) => {
         }
     } catch (error) {
         // Pass any errors to the error-handling middleware
+        next(error);
+    }
+};
+
+/**
+ * @function downloadFiles
+ * @param req - The request object containing the file names to download.
+ * @param res - The response object used to send back the file download.
+ * @param next - The next middleware function in the application's request-response cycle.
+ * @description This controller handles the creation of a ZIP archive containing the requested files and initiates the download process. It validates the input array of file names, creates a ZIP archive, and streams the archive to the client. If any file is not found, it sends an appropriate error response.
+ */
+export const downloadFiles: Controller = async (req, res, next) => {
+    try {
+        // Extract file name from request parameters
+        const { fileNames } = req.body;
+
+        // Validate fileNames array
+        if (!Array.isArray(fileNames) || !fileNames.length) {
+            throw new ErrorHandler(httpCode.BAD_REQUEST, messageConstant.NO_FILE_SELECTED);
+        }
+
+        // Create a zip archive
+        const archive = archiver("zip", {
+            zlib: { level: 9 },
+        });
+
+        // Set response attachment as downloaded-files.zip
+        res.attachment("downloaded-files.zip");
+
+        // Pipe the archive to the response
+        archive.pipe(res);
+
+        // Iterate through each file name
+        for (const fileName of fileNames) {
+            const filePath = path.join(__dirname, "..", "..", "public", "images", fileName);
+
+            if (fs.existsSync(filePath)) {
+                // Append file to the archive
+                archive.append(fs.createReadStream(filePath), {
+                    name: fileName,
+                });
+            } else {
+                return res.status(httpCode.BAD_REQUEST).json({
+                    status: httpCode.BAD_REQUEST,
+                    message: messageConstant.FILE_NOT_FOUND,
+                });
+            }
+        }
+
+        // Finalize the archive
+        await archive.finalize();
+    } catch (error) {
         next(error);
     }
 };

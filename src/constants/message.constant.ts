@@ -25,6 +25,7 @@ const messageConstant = {
     VALIDATION_FAILED: "Validation failed",
     EMAIL_IN_USED: "Email already in use",
     FILE_NOT_UPLOADED: "Please Upload the file with valid extension(.png, .jpg, .jpeg)",
+    NO_FILE_SELECTED: "File not selected",
     WRONG_PASSWORD: "Wrong password",
     NOT_AUTHORIZED: "Not authorized",
     DELETE_NOT_AUTHORIZED: "You are not authorized to delete this user.",
