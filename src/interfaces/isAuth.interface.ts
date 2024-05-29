@@ -6,6 +6,7 @@ interface CustomJwtPayload extends JwtPayload {
     firstName: string;
     lastName: string;
     phoneNumber: string;
+    roleId: number
 }
 
 export { CustomJwtPayload };

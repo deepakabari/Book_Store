@@ -15,7 +15,7 @@ class ErrorHandler extends Error {
 // Middleware for handling errors
 const handleError = (err: ErrorHandler, req: Request, res: Response, next: NextFunction) => {
     const { status, message } = err;
-    res.status(status).json({
+    return res.status(status).json({
         status,
         message,
     });

@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
-import { Table, Column, Model, BelongsTo } from "sequelize-typescript";
-import { BookAttributes, BookCreationAttributes } from "../../interfaces/";
-import User from "./user.model";
+import { Table, Column, Model, BelongsTo, HasMany } from "sequelize-typescript";
+import { BookAttributes, BookCreationAttributes } from "../../interfaces";
+import { User, Cart } from "./index";
 
 @Table({
     timestamps: true,
@@ -57,6 +57,11 @@ class Book extends Model<BookAttributes, BookCreationAttributes> {
         foreignKey: "userId",
     })
     user: User;
+
+    @HasMany(() => Cart, {
+        foreignKey: "bookId",
+    })
+    bookCarts: Cart[];
 }
 
 export default Book;
