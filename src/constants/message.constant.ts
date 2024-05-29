@@ -46,6 +46,12 @@ const messageConstant = {
     CATEGORY_HAS_BOOKS: "Category has books.",
     CATEGORY_DELETED: "Category deleted successfully",
     CATEGORY_RETRIEVED: "Category retrieved successfully",
+    BOOK_IN_CART: "Book already added in cart",
+    BOOK_ADDED_IN_CART: "Book successfully added in cart.",
+    CART_RETRIEVED: "Cart retrieved successfully.",
+    CART_UPDATED: "Cart updated successfully.",
+    CART_NOT_FOUND: "Cart not found",
+    CART_DELETED: "Cart deleted successfully.",
 };
 
 export default messageConstant;
