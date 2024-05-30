@@ -4,3 +4,4 @@ export * as bookController from "./Book/book.controller";
 export * as categoryController from "./Category/category.controller";
 export * as commonController from "./Common/common.controller";
 export * as cartController from "./Cart/cart.controller";
+export * as orderController from "./Order/order.controller";

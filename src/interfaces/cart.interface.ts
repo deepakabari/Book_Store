@@ -6,6 +6,8 @@ interface CartAttributes {
     bookId: number;
     userId: number;
     quantity: number;
+    isPlaced?: boolean;
+    deletedAt?: Date | null;
 }
 
 // Define a type for Category creation attributes by making 'id' optional

@@ -52,6 +52,8 @@ const messageConstant = {
     CART_UPDATED: "Cart updated successfully.",
     CART_NOT_FOUND: "Cart not found",
     CART_DELETED: "Cart deleted successfully.",
+    CART_QUANTITY_UPDATED: "Cart quantity updated",
+    ORDER_CREATED: "Order created successfully",
 };
 
 export default messageConstant;
