@@ -25,12 +25,15 @@ class Cart extends Model<CartAttributes, CartCreationAttributes> {
     @Column({ type: DataTypes.INTEGER, allowNull: false })
     quantity: number;
 
+    @Column({ type: DataTypes.BOOLEAN, allowNull: true })
+    isPlaced: boolean;
+
     @BelongsTo(() => User, {
         foreignKey: "userId",
     })
     user: User;
 
-    @BelongsTo(() => Book, {    
+    @BelongsTo(() => Book, {
         foreignKey: "bookId",
     })
     book: Book;

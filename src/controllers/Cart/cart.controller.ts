@@ -19,6 +19,7 @@ export const getCart: Controller = async (req, res, next) => {
                     attributes: ["id", "firstName", "lastName"],
                 },
             ],
+            where: { isPlaced: false },
         });
 
         // Respond with a success status and the cart contents
@@ -41,12 +42,17 @@ export const addCart: Controller = async (req, res, next) => {
         // Retrieve the userId from the authenticated user's information
         const userId = req.user.id;
 
-        const bookInCart = await Cart.findOne({ where: { bookId } });
+        const cart = await Cart.findOne({ where: { bookId, isPlaced: false } });
 
         // Check if the book is already in the user's cart
-        if (bookInCart) {
-            // If the book is in the cart, throw a conflict error
-            throw new ErrorHandler(httpCode.CONFLICT, messageConstant.BOOK_IN_CART);
+        if (cart) {
+            const updatedCart = await cart.increment("quantity", { by: 1 });
+            // Respond with a success status and the updated cart entry
+            return res.status(httpCode.OK).json({
+                status: httpCode.OK,
+                message: messageConstant.CART_QUANTITY_UPDATED,
+                data: updatedCart,
+            });
         }
 
         const book = await Book.findOne({ where: { id: bookId } });
@@ -70,8 +76,7 @@ export const addCart: Controller = async (req, res, next) => {
             message: messageConstant.BOOK_ADDED_IN_CART,
             data: newCart,
         });
-    } catch (error) {
-        // Pass any errors to the error-handling middleware
+    } catch (error: any) {
         next(error);
     }
 };
