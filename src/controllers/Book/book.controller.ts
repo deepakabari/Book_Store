@@ -3,7 +3,7 @@ import path from "path";
 import { Controller } from "../../interfaces";
 import httpCode from "../../constants/http.constant";
 import messageConstant from "../../constants/message.constant";
-import { Book, Category } from "../../db/models";
+import { Book, Cart, Category } from "../../db/models";
 import { Order } from "sequelize";
 import { logger } from "../../utils/logger";
 import { ErrorHandler } from "../../middleware/errorHandler";
@@ -260,6 +260,10 @@ export const deleteBook: Controller = async (req, res, next) => {
 
         if (existingBook.userId !== req.user.id) {
             throw new ErrorHandler(httpCode.UNAUTHORIZED, messageConstant.NOT_AUTHORIZED);
+        }
+
+        if (await Cart.findOne({ where: { bookId: id } })) {
+            throw new ErrorHandler(httpCode.BAD_REQUEST, messageConstant.BOOK_IN_CART);
         }
 
         clearImage(existingBook.image);
