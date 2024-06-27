@@ -9,6 +9,7 @@ interface BookAttributes {
     description: string;
     price: number;
     categoryId: number;
+    quantity: number;
 }
 
 // Define a type for Book creation attributes by making 'id' optional

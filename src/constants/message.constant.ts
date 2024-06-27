@@ -56,6 +56,7 @@ const messageConstant = {
     CART_DELETED: "Cart deleted successfully.",
     CART_QUANTITY_UPDATED: "Cart quantity updated",
     ORDER_CREATED: "Order created successfully",
+    QUANTITY_NOT_AVAILABLE: "Insufficient quantity in inventory",
 };
 
 export default messageConstant;

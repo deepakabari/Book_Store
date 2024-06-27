@@ -53,6 +53,13 @@ class Book extends Model<BookAttributes, BookCreationAttributes> {
     })
     categoryId: number;
 
+    @Column({
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+    })
+    quantity: number;
+
     @BelongsTo(() => User, {
         foreignKey: "userId",
     })

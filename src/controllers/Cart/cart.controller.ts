@@ -63,6 +63,10 @@ export const addCart: Controller = async (req, res, next) => {
             throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.BOOK_NOT_FOUND);
         }
 
+        if (book.quantity < quantity) {
+            throw new ErrorHandler(httpCode.BAD_REQUEST, messageConstant.QUANTITY_NOT_AVAILABLE);
+        }
+
         // Create a new cart entry with the bookId, userId, and quantity
         const newCart = await Cart.create({
             bookId,

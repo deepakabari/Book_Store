@@ -148,7 +148,7 @@ export const getBooks: Controller = async (req, res, next) => {
 export const createBook: Controller = async (req, res, next) => {
     try {
         // Destructuring the request body to get book details
-        const { name, description, price, categoryId } = req.body;
+        const { name, description, price, categoryId, quantity } = req.body;
 
         // Checking if the book already exists in the database
         const existingBook = await Book.findOne({ where: { name } });
@@ -179,6 +179,7 @@ export const createBook: Controller = async (req, res, next) => {
             description,
             price,
             categoryId,
+            quantity,
         });
 
         // If book creation fails, send a BAD_REQUEST error
@@ -215,7 +216,7 @@ export const updateBook: Controller = async (req, res, next) => {
         const { id } = req.params;
 
         // Destructuring the request body to get updated book details
-        const { name, description, price, categoryId } = req.body;
+        const { name, description, price, categoryId, quantity } = req.body;
 
         // Finding the book by its primary key (id)
         const existingBook = await Book.findByPk(id);
@@ -230,17 +231,17 @@ export const updateBook: Controller = async (req, res, next) => {
         }
 
         // Checking if the category exists in the database
-        const category = await Category.findOne({ where: { id: categoryId } });
+        if (categoryId) {
+            const category = await Category.findOne({ where: { id: categoryId } });
 
-        // If category not exists, pass a NOT_FOUND error
-        if (!category) {
-            throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.CATEGORY_NOT_EXISTS);
+            // If category not exists, pass a NOT_FOUND error
+            if (!category) {
+                throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.CATEGORY_NOT_EXISTS);
+            }
         }
 
-        if (req.file) {
-            if (req.file?.filename !== existingBook.image) {
-                clearImage(existingBook.image);
-            }
+        if (req.file && req.file?.filename !== existingBook.image) {
+            clearImage(existingBook.image);
         }
 
         // Updating the book with new details
@@ -251,6 +252,7 @@ export const updateBook: Controller = async (req, res, next) => {
                 description,
                 price,
                 categoryId,
+                quantity,
             },
             { where: { id } },
         );
