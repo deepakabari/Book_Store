@@ -12,6 +12,7 @@ const messageConstant = {
     USER_EXIST: "User already exist. Please login!",
     USER_CREATED: "User created successfully",
     USER_UPDATED: "User updated successfully",
+    USER_RETRIEVED: "User retrieved successfully",
     USER_DELETED: "User deleted successfully",
     USER_CREATION_FAILED: "User creation failed",
     BOOK_CREATION_FAILED: "Book creation failed",

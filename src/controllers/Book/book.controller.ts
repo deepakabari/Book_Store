@@ -7,6 +7,7 @@ import { Book, Cart, Category } from "../../db/models";
 import { Order } from "sequelize";
 import { logger } from "../../utils/logger";
 import { ErrorHandler } from "../../middleware/errorHandler";
+import { Op } from "sequelize";
 
 /**
  * @function getAllBooks
@@ -19,7 +20,7 @@ import { ErrorHandler } from "../../middleware/errorHandler";
 export const getAllBooks: Controller = async (req, res, next) => {
     try {
         // Extract query parameters
-        const { sortBy, orderBy, page, pageSize } = req.query;
+        const { sortBy, orderBy, page, pageSize, keyword } = req.query;
 
         // Calculate pagination parameters
         const pageNumber = parseInt(page as string, 10) || 1;
@@ -29,10 +30,21 @@ export const getAllBooks: Controller = async (req, res, next) => {
         // Define sorting order based on query parameters
         const order = sortBy && orderBy ? ([[sortBy, orderBy]] as Order) : [];
 
+        // Query the database to get all books with optional keyword search
         const getAllBooks = await Book.findAndCountAll({
             order,
             limit,
             offset,
+            where: {
+                ...(keyword
+                    ? {
+                          [Op.or]: [
+                              { name: { [Op.like]: `%${keyword}%` } },
+                              { description: { [Op.like]: `%${keyword}%` } },
+                          ],
+                      }
+                    : {}),
+            },
         });
 
         // Return response with block history data
@@ -90,10 +102,29 @@ export const getBookById: Controller = async (req, res, next) => {
  */
 export const getBooks: Controller = async (req, res, next) => {
     try {
+        const { page, pageSize, keyword } = req.query;
         const id = req.user.id;
 
-        const getBooks = await Book.findAll({
-            where: { userId: id },
+        // Calculate pagination parameters
+        const pageNumber = parseInt(page as string, 10) || 1;
+        const limit = parseInt(pageSize as string, 10) || 10;
+        const offset = (pageNumber - 1) * limit;
+
+        // Query the database to get all books with optional keyword search
+        const getBooks = await Book.findAndCountAll({
+            where: {
+                userId: id,
+                ...(keyword
+                    ? {
+                          [Op.or]: [
+                              { name: { [Op.like]: `%${keyword}%` } },
+                              { description: { [Op.like]: `%${keyword}%` } },
+                          ],
+                      }
+                    : {}),
+            },
+            limit,
+            offset,
         });
 
         return res.status(httpCode.OK).json({
