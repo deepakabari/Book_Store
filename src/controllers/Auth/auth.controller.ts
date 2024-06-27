@@ -53,7 +53,7 @@ export const login: Controller = async (req, res, next) => {
                     firstName: existingUser.firstName,
                     lastName: existingUser.lastName,
                     phoneNumber: existingUser.phoneNumber,
-                    roleId: existingUser.roleId
+                    roleId: existingUser.roleId,
                 },
                 SECRET as string,
                 {
@@ -63,7 +63,7 @@ export const login: Controller = async (req, res, next) => {
 
             return res.json({
                 status: httpCode.OK,
-                message: messageConstant.SUCCESS,
+                message: messageConstant.LOGIN_SUCCESS,
                 data: token,
             });
         } else {

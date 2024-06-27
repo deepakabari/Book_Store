@@ -1,6 +1,7 @@
 const messageConstant = {
     SUCCESS: "Success",
     ERROR: "Error",
+    LOGIN_SUCCESS: "Logged in successfully",
     LOGIN_FAILED: "Username or Password is invalid",
     ACCESS_DENIED: "You have no permission..!",
     ERROR_VERIFY_PERMISSION: "An error occurred while verifying permissions.",

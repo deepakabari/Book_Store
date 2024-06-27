@@ -1,9 +1,9 @@
 import path from "path";
-import express, { Express, Request, Response } from "express";
+import express, { Express, NextFunction, Request, Response } from "express";
 import bodyParser from "body-parser";
 import { errors } from "celebrate";
 import dotenv from "dotenv";
-import cors from "./middleware/cors";
+import cors from 'cors';
 import router from "./routes";
 import { handleError } from "./middleware/errorHandler";
 import { dbConnection } from "./db/config";
@@ -27,7 +27,10 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // Enable CORS with predefined middleware
-app.use(cors);
+app.use(cors({
+    origin: '*',
+    credentials: true
+}));
 
 // Add routing for the application
 app.use(router);

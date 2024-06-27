@@ -5,7 +5,7 @@ export const AuthSchema = {
     login: {
         [Segments.BODY]: Joi.object({
             email: Joi.string().required().trim().email(),
-            password: Joi.string().required().regex(RegExp(linkConstant.PASSWORD_REGEX)),
+            password: Joi.string().required(),
         }),
     },
 
