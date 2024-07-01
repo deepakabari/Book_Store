@@ -78,14 +78,10 @@ export const getBookById: Controller = async (req, res, next) => {
             throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.BOOK_NOT_FOUND);
         }
 
-        const getBookById = await Book.findOne({
-            where: { id },
-        });
-
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.BOOK_RETRIEVED,
-            data: getBookById,
+            data: existingBook,
         });
     } catch (error) {
         next(error);
@@ -103,7 +99,7 @@ export const getBookById: Controller = async (req, res, next) => {
 export const getBooks: Controller = async (req, res, next) => {
     try {
         const { page, pageSize, keyword } = req.query;
-        const id = req.user.id;
+        const userId = req.user.id;
 
         // Calculate pagination parameters
         const pageNumber = parseInt(page as string, 10) || 1;
@@ -113,7 +109,7 @@ export const getBooks: Controller = async (req, res, next) => {
         // Query the database to get all books with optional keyword search
         const getBooks = await Book.findAndCountAll({
             where: {
-                userId: id,
+                userId,
                 ...(keyword
                     ? {
                           [Op.or]: [
@@ -295,7 +291,8 @@ export const deleteBook: Controller = async (req, res, next) => {
             throw new ErrorHandler(httpCode.UNAUTHORIZED, messageConstant.NOT_AUTHORIZED);
         }
 
-        if (await Cart.findOne({ where: { bookId: id } })) {
+        const bookInCart = await Cart.findOne({ where: { bookId: id } });
+        if (bookInCart) {
             throw new ErrorHandler(httpCode.BAD_REQUEST, messageConstant.BOOK_IN_CART);
         }
 

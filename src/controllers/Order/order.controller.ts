@@ -11,7 +11,7 @@ export const addOrder: Controller = async (req, res, next) => {
 
     try {
         // Retrieve userId and cartId from Request body
-        const { userId, cartId } = req.body;
+        const { userId } = req.body;
 
         // Check if the user already exists
         const user = await User.findOne({ where: { id: userId } });
@@ -22,7 +22,15 @@ export const addOrder: Controller = async (req, res, next) => {
         }
 
         // Get all cart items associated with the cartId
-        const cartItems = await Cart.findAll({ where: { id: cartId, isPlaced: false }, include: [Book], transaction });
+        const cartItems = await Cart.findAll({
+            where: { userId, isPlaced: false },
+            include: [Book],
+            transaction,
+        });
+
+        if (cartItems.length === 0) {
+            throw new ErrorHandler(httpCode.BAD_REQUEST, messageConstant.CART_EMPTY);
+        }
 
         // Calculate the total amount
         const totalAmount = cartItems.reduce((total, cartItem) => {
@@ -32,7 +40,6 @@ export const addOrder: Controller = async (req, res, next) => {
         const newOrder = await Order.create(
             {
                 userId,
-                cartId,
                 totalAmount,
             },
             { transaction },
@@ -62,7 +69,7 @@ export const addOrder: Controller = async (req, res, next) => {
                 { where: { id: bookId }, transaction },
             );
 
-            // Optionally, remove cart item after order is placed
+            // remove cart item after order is placed
             await Cart.destroy({ where: { id: cartItem.id }, transaction });
         }
 

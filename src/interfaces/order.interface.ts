@@ -4,7 +4,6 @@ import { Optional } from "sequelize";
 interface OrderAttributes {
     id: number;
     userId: number;
-    cartId: number;
     totalAmount?: number
 }
 

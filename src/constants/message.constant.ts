@@ -55,6 +55,7 @@ const messageConstant = {
     CART_NOT_FOUND: "Cart not found",
     CART_DELETED: "Cart deleted successfully.",
     CART_QUANTITY_UPDATED: "Cart quantity updated",
+    CART_EMPTY: "Cart is empty or already placed",
     ORDER_CREATED: "Order created successfully",
     QUANTITY_NOT_AVAILABLE: "Insufficient quantity in inventory",
 };

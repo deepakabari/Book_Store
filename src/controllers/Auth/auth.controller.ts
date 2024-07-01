@@ -208,7 +208,7 @@ export const resetPassword: Controller = async (req, res, next) => {
             status: httpCode.OK,
             message: messageConstant.PASSWORD_RESET,
         });
-    } catch (error: any) {
+    } catch (error) {
         next(error);
     }
 };

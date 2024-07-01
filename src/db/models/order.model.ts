@@ -24,12 +24,6 @@ class Order extends Model<OrderAttributes, OrderCreationAttributes> {
 
     @Column({
         type: DataTypes.INTEGER,
-        allowNull: false,
-    })
-    cartId: number;
-
-    @Column({
-        type: DataTypes.INTEGER,
         allowNull: true,
         defaultValue: 0,
     })

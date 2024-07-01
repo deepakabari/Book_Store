@@ -6,27 +6,41 @@ import messageConstant from "../../constants/message.constant";
 
 export const getCart: Controller = async (req, res, next) => {
     try {
+        const userId = req.user.id;
+
         // Find all cart entries
         const cart = await Cart.findAll({
             attributes: ["id", "quantity"],
             include: [
                 {
                     model: Book,
-                    attributes: ["id", "name"],
+                    attributes: ["id", "name", "price"],
                 },
                 {
                     model: User,
                     attributes: ["id", "firstName", "lastName"],
                 },
             ],
-            where: { isPlaced: false },
+            where: { userId, isPlaced: false },
         });
+
+        if (cart.length === 0) {
+            return res.status(httpCode.NOT_FOUND).json({
+                status: httpCode.NOT_FOUND,
+                message: messageConstant.CART_EMPTY,
+            });
+        }
+
+        // Calculate total amount
+        const totalAmount = cart.reduce((total, cartItem) => {
+            return total + cartItem.quantity * (cartItem.book ? cartItem.book.price : 0);
+        }, 0);
 
         // Respond with a success status and the cart contents
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.CART_RETRIEVED,
-            data: cart,
+            data: { cart, totalAmount },
         });
     } catch (error) {
         // Pass any errors to the error-handling middleware
@@ -42,20 +56,20 @@ export const addCart: Controller = async (req, res, next) => {
         // Retrieve the userId from the authenticated user's information
         const userId = req.user.id;
 
-        const cart = await Cart.findOne({ where: { bookId, isPlaced: false } });
+        const cart = await Cart.findOne({ where: { bookId, userId, isPlaced: false } });
 
         // Check if the book is already in the user's cart
         if (cart) {
-            const updatedCart = await cart.increment("quantity", { by: 1 });
+            await cart.increment("quantity", { by: 1 });
             // Respond with a success status and the updated cart entry
             return res.status(httpCode.OK).json({
                 status: httpCode.OK,
                 message: messageConstant.CART_QUANTITY_UPDATED,
-                data: updatedCart,
+                data: cart,
             });
         }
 
-        const book = await Book.findOne({ where: { id: bookId } });
+        const book = await Book.findByPk(bookId);
 
         // Check if the book exist in the database
         if (!book) {
@@ -93,18 +107,19 @@ export const updateCart: Controller = async (req, res, next) => {
         // Retrieve the userId from the authenticated user's information
         const userId = req.user.id;
 
+        const book = await Book.findByPk(bookId);
+
         // Check if the book exist in the database
-        if (!(await Book.findOne({ where: { id: bookId } }))) {
+        if (!book) {
             // If either doesn't exist, throw a not found error
             throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.BOOK_NOT_FOUND);
         }
 
         await Cart.update(
             {
-                bookId,
                 quantity,
             },
-            { where: { userId } },
+            { where: { bookId, userId, isPlaced: false } },
         );
 
         return res.status(httpCode.OK).json({
@@ -124,7 +139,7 @@ export const deleteCart: Controller = async (req, res, next) => {
     try {
         const { cartId } = req.params;
 
-        const cart = await Cart.findOne({ where: { id: cartId } });
+        const cart = await Cart.findByPk(cartId);
         if (!cart) {
             throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.CART_NOT_FOUND);
         }
