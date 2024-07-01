@@ -12,6 +12,7 @@ const messageConstant = {
     USER_EXIST: "User already exist. Please login!",
     USER_CREATED: "User created successfully",
     USER_UPDATED: "User updated successfully",
+    USER_RETRIEVED: "User retrieved successfully",
     USER_DELETED: "User deleted successfully",
     USER_CREATION_FAILED: "User creation failed",
     BOOK_CREATION_FAILED: "Book creation failed",
@@ -54,7 +55,9 @@ const messageConstant = {
     CART_NOT_FOUND: "Cart not found",
     CART_DELETED: "Cart deleted successfully.",
     CART_QUANTITY_UPDATED: "Cart quantity updated",
+    CART_EMPTY: "Cart is empty or already placed",
     ORDER_CREATED: "Order created successfully",
+    QUANTITY_NOT_AVAILABLE: "Insufficient quantity in inventory",
 };
 
 export default messageConstant;

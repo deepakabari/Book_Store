@@ -24,9 +24,10 @@ class Order extends Model<OrderAttributes, OrderCreationAttributes> {
 
     @Column({
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
+        defaultValue: 0,
     })
-    cartId: number;
+    totalAmount?: number;
 
     @BelongsTo(() => User, {
         foreignKey: "userId",

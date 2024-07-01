@@ -4,7 +4,6 @@ export const OrderSchema = {
     add: {
         [Segments.BODY]: {
             userId: Joi.number().required(),
-            cartId: Joi.number().required(),
         },
     },
 };
