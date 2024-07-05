@@ -1,9 +1,10 @@
 import { ErrorHandler } from "../../middleware/errorHandler";
-import { Book, Cart, Order, User } from "../../db/models";
+import { Book, Cart, Order, Payment, User } from "../../db/models";
 import { Controller } from "../../interfaces";
 import httpCode from "../../constants/http.constant";
 import messageConstant from "../../constants/message.constant";
 import { sequelize } from "../../db/config/db.connection";
+import stripe from "../../db/config/stripe";
 
 export const addOrder: Controller = async (req, res, next) => {
     // Begin transaction to ensure atomicity
@@ -14,11 +15,16 @@ export const addOrder: Controller = async (req, res, next) => {
         const { userId } = req.body;
 
         // Check if the user already exists
-        const user = await User.findOne({ where: { id: userId } });
+        const user = await User.findByPk(userId);
 
         // if user not exist
         if (!user) {
             throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.USER_NOT_EXIST);
+        }
+
+        const payment = await Payment.findOne({ where: { userId } });
+        if (!payment) {
+            throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.PAYMENT_METHOD_NOT_FOUND);
         }
 
         // Get all cart items associated with the cartId
@@ -37,10 +43,22 @@ export const addOrder: Controller = async (req, res, next) => {
             return total + cartItem.quantity * cartItem.book.price;
         }, 0);
 
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: totalAmount * 100,
+            currency: "gbp",
+            automatic_payment_methods: {
+                enabled: true,
+            },
+            payment_method: payment.paymentMethodId,
+            customer: payment.stripeCustomerId,
+            confirm: true,
+        });
+
         const newOrder = await Order.create(
             {
                 userId,
                 totalAmount,
+                paymentIntentId: paymentIntent.id,
             },
             { transaction },
         );

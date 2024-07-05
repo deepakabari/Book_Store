@@ -40,7 +40,7 @@ export const createCategory: Controller = async (req, res, next) => {
             data: newCategory,
         });
     } catch (error) {
-        throw error;
+        next(error);
     }
 };
 

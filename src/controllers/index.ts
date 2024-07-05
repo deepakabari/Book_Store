@@ -5,3 +5,5 @@ export * as categoryController from "./Category/category.controller";
 export * as commonController from "./Common/common.controller";
 export * as cartController from "./Cart/cart.controller";
 export * as orderController from "./Order/order.controller";
+export * as paymentController from "./Payment/payment.controller";
+export * as cardController from "./Card/card.controller";

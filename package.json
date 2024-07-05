@@ -36,6 +36,7 @@
         "nodemailer": "^6.9.13",
         "sequelize": "^6.37.3",
         "sequelize-typescript": "^2.1.6",
+        "stripe": "^16.1.0",
         "winston": "^3.13.0"
     },
     "devDependencies": {

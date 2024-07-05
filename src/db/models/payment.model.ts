@@ -1,13 +1,13 @@
 import { DataTypes } from "sequelize";
 import { Table, Column, Model, BelongsTo } from "sequelize-typescript";
-import { OrderAttributes, OrderCreationAttributes } from "../../interfaces";
+import { PaymentAttributes, PaymentCreationAttributes } from "../../interfaces";
 import { User } from "./index";
 
 @Table({
     timestamps: true,
     paranoid: true,
 })
-class Order extends Model<OrderAttributes, OrderCreationAttributes> {
+class Payment extends Model<PaymentAttributes, PaymentCreationAttributes> {
     @Column({
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -23,17 +23,17 @@ class Order extends Model<OrderAttributes, OrderCreationAttributes> {
     userId: number;
 
     @Column({
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         allowNull: true,
         defaultValue: 0,
     })
-    totalAmount?: number;
+    paymentMethodId?: string;
 
     @Column({
         type: DataTypes.STRING,
         allowNull: true,
     })
-    paymentIntentId?: string;
+    stripeCustomerId?: string;
 
     @BelongsTo(() => User, {
         foreignKey: "userId",
@@ -41,4 +41,4 @@ class Order extends Model<OrderAttributes, OrderCreationAttributes> {
     user: User;
 }
 
-export default Order;
+export default Payment;

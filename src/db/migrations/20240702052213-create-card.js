@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable("Book", {
+        await queryInterface.createTable("Card", {
             id: {
                 allowNull: false,
                 autoIncrement: true,
@@ -11,40 +11,39 @@ module.exports = {
             },
             userId: {
                 type: Sequelize.INTEGER,
-                allowNull: false,
+                allowNull: true,
             },
-            name: {
+            cardId: {
                 type: Sequelize.STRING,
-                allowNull: false,
-                unique: true,
+                allowNull: true,
             },
-            image: {
+            cardBrand: {
                 type: Sequelize.STRING,
-                allowNull: false,
+                allowNull: true,
             },
-            description: {
+            cardLastFour: {
                 type: Sequelize.STRING,
-                allowNull: false,
+                allowNull: true,
             },
-            price: {
+            tokenId: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            expMonth: {
                 type: Sequelize.INTEGER,
-                allowNull: false,
+                allowNull: true,
             },
-            categoryId: {
-                type: Sequelize.INTEGER,
-                allowNull: false,
-            },
-            quantity: {
+            expYear: {
                 type: Sequelize.INTEGER,
                 allowNull: true,
             },
             createdAt: {
                 type: Sequelize.DATE,
-                allowNull: false,
+                allowNull: true,
             },
             updatedAt: {
                 type: Sequelize.DATE,
-                allowNull: false,
+                allowNull: true,
             },
             deletedAt: {
                 type: Sequelize.DATE,
@@ -53,6 +52,6 @@ module.exports = {
         });
     },
     async down(queryInterface) {
-        await queryInterface.dropTable("Book");
+        await queryInterface.dropTable("Card");
     },
 };

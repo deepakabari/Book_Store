@@ -41,6 +41,18 @@ module.exports = {
                 type: Sequelize.STRING,
                 allowNull: false,
             },
+            stripeCustomerId: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            cardHolderId: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            cardId: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
             resetToken: {
                 type: Sequelize.STRING,
                 allowNull: true,

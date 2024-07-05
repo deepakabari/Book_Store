@@ -9,8 +9,8 @@ type ResponseBody<T> = {
 // Define a type 'Controller' that represents the structure of a controller function
 type Controller<T = unknown> = (
     req: Request,
-    res: Response<ResponseBody<T>>,
+    res: Response<any>,
     next: NextFunction,
-) => Promise<Response<ResponseBody<T>> | void>;
+) => Promise<Response<any> | void>;
 
 export { Controller };

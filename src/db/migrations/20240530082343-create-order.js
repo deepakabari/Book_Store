@@ -13,6 +13,14 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: false,
             },
+            totalAmount: {
+                type: Sequelize.INTEGER,
+                allowNull: true,
+            },
+            paymentIntentId: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
             createdAt: {
                 type: Sequelize.DATE,
                 allowNull: false,
