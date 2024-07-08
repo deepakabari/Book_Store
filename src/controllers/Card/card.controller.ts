@@ -1,7 +1,7 @@
 import httpCode from "../../constants/http.constant";
 import messageConstant from "../../constants/message.constant";
 import { ErrorHandler } from "../../middleware/errorHandler";
-import { Payment, User } from "../../db/models";
+import { Book, Cart, Order, Payment, User } from "../../db/models";
 import { Controller } from "../../interfaces";
 import stripe from "../../db/config/stripe";
 import Stripe from "stripe";
@@ -19,17 +19,47 @@ export const createSession: Controller = async (req, res, next) => {
             throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.USER_NOT_EXIST);
         }
 
+        // Get all cart items associated with the cartId
+        const cartItems = await Cart.findAll({
+            where: { userId, isPlaced: false },
+            include: [
+                {
+                    model: Book,
+                    attributes: ["id", "name", "price"],
+                },
+            ],
+        });
+
+        const lineItems = cartItems.map((cartItem) => ({
+            price_data: {
+                currency: "usd",
+                product_data: {
+                    name: cartItem.book.name,
+                },
+                unit_amount: cartItem.book.price * 100,
+            },
+            quantity: cartItem.quantity,
+        }));
+
         // Create a Stripe Checkout session for setting up a payment method
         const session = await stripe.checkout.sessions.create({
+            line_items: lineItems,
             payment_method_types: ["card"],
-            mode: "setup",
             customer: user.stripeCustomerId,
             success_url: `${linkConstant.SUCCESS}/${userId}?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${linkConstant.CANCEL}`,
+            mode: "payment",
+            shipping_address_collection: {
+                allowed_countries: ["IN", "RU"],
+            },
         });
 
+        if (!session.url) {
+            throw new ErrorHandler(httpCode.BAD_REQUEST, messageConstant.SESSION_URL_MISSING);
+        }
+
         // Respond with the session ID
-        res.json({ id: session.id });
+        res.json({ url: session.url });
     } catch (error) {
         // Handle Stripe API errors specifically
         if (error instanceof Stripe.errors.StripeError) {
@@ -52,50 +82,77 @@ export const success: Controller = async (req, res, next) => {
             throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.USER_NOT_EXIST);
         }
 
+        // Get all cart items associated with the cartId
+        const cartItems = await Cart.findAll({
+            where: { userId, isPlaced: false },
+            include: [Book],
+        });
+
+        if (cartItems.length === 0) {
+            throw new ErrorHandler(httpCode.BAD_REQUEST, messageConstant.CART_EMPTY);
+        }
+
         // Extract session_id from query parameters
         const session_id = req.query.session_id as string;
 
-        // Retrieve the Stripe Checkout session using the session_id
-        const session = await stripe.checkout.sessions.retrieve(session_id);
+        const session = await stripe.checkout.sessions.retrieve(session_id, {
+            expand: ["payment_intent.payment_method"],
+        });
 
-        if (session.setup_intent) {
-            const setupIntentId = session.setup_intent as string;
-
-            // Retrieve the SetupIntent to get the payment method
-            const setupIntent = await stripe.setupIntents.retrieve(setupIntentId);
-            if (setupIntent.status === "succeeded") {
-                if (setupIntent.payment_method) {
-                    const paymentMethodId = setupIntent.payment_method as string;
-
-                    // Attach the payment method to the customer
-                    const customerId = user.stripeCustomerId as string;
-                    await stripe.paymentMethods.attach(paymentMethodId, { customer: customerId });
-
-                    // Update the customer's default payment method
-                    await stripe.customers.update(customerId, {
-                        invoice_settings: {
-                            default_payment_method: paymentMethodId,
-                        },
-                    });
-
-                    // Save the payment method information in the database
-                    await Payment.create({
-                        userId,
-                        paymentMethodId,
-                        stripeCustomerId: user.stripeCustomerId,
-                    });
-
-                    // Respond with a success message
-                    res.send(messageConstant.PAYMENT_METHOD_ATTACHED);
-                } else {
-                    res.status(httpCode.BAD_REQUEST).send(messageConstant.PAYMENT_METHOD_FAILED);
-                }
-            } else {
-                res.status(httpCode.BAD_REQUEST).send(session.url);
-            }
-        } else {
-            res.status(httpCode.BAD_REQUEST).send(messageConstant.SETUP_INTENT_FAILED);
+        if (!session || !session.payment_intent) {
+            throw new ErrorHandler(httpCode.BAD_REQUEST, messageConstant.SESSION_FAILED);
         }
+
+        let paymentIntentId: string | undefined;
+
+        if (typeof session.payment_intent === "string") {
+            paymentIntentId = session.payment_intent;
+        } else if (session.payment_intent && session.payment_intent.id) {
+            paymentIntentId = session.payment_intent.id;
+        } else {
+            // Handle the case where payment_intent.id doesn't exist
+            throw new Error("Unable to retrieve payment intent ID");
+        }
+
+        const newOrder = await Order.create({
+            userId,
+            totalAmount: session.amount_total,
+            paymentIntentId,
+        });
+
+        // Update book quantities and clear cart items
+        for (const cartItem of cartItems) {
+            const { bookId, quantity } = cartItem;
+
+            // Retrieve the book and its current quantity
+            const book = await Book.findByPk(bookId);
+
+            if (!book) {
+                throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.BOOK_NOT_FOUND);
+            }
+
+            // Ensure there's enough quantity available
+            if (book.quantity < quantity) {
+                throw new ErrorHandler(httpCode.BAD_REQUEST, messageConstant.QUANTITY_NOT_AVAILABLE);
+            }
+
+            // Update book quantity (subtract ordered quantity)
+            await Book.update(
+                {
+                    quantity: book.quantity - quantity,
+                },
+                { where: { id: bookId } },
+            );
+
+            // remove cart item after order is placed
+            await Cart.destroy({ where: { id: cartItem.id } });
+        }
+
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.ORDER_CREATED,
+            data: newOrder,
+        });
     } catch (error) {
         // Handle Stripe API errors specifically
         if (error instanceof Stripe.errors.StripeError) {

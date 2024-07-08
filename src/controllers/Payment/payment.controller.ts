@@ -145,7 +145,7 @@ export const addCard: Controller = async (req, res, next) => {
             // If user does not have a card, create a new virtual card using Stripe API
             card = await stripe.issuing.cards.create({
                 cardholder: user.cardHolderId,
-                currency: "gbp",
+                currency: "usd",
                 type: "virtual",
             });
 
