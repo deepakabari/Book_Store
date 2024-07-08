@@ -79,6 +79,8 @@ const messageConstant = {
     CUSTOMER_CREATE: "Customer created successfully",
     CUSTOMER_EXISTS: "Customer already exists in stripe",
     SETUP_INTENT_FAILED: "Setup Intent was not found.",
+    SESSION_URL_MISSING: "Stripe Checkout session URL is missing.",
+    SESSION_FAILED: "Session retrival failed",
 };
 
 export default messageConstant;
