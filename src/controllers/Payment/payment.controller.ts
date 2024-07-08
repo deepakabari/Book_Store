@@ -9,6 +9,7 @@ import { compileEmailTemplate } from "../../utils/hbsCompiler";
 import { sendEmail } from "../../utils/email";
 import bcrypt from "bcrypt";
 import { Stripe } from "stripe";
+import linkConstant from "../../constants/link.constant";
 dotenv.config();
 
 const ITERATION = process.env.ITERATION;
@@ -184,7 +185,7 @@ export const sendPaymentLink: Controller = async (req, res, next) => {
         }
 
         // Create the payment form link
-        const paymentFormLink = `http://localhost:4000/payment/payment-form/${customerEmail}`;
+        const paymentFormLink = `${linkConstant.PAYMENT_FORM}/${customerEmail}`;
 
         // Prepare data for email template
         const templateData = {
@@ -219,7 +220,7 @@ export const openPaymentForm: Controller = async (req, res, next) => {
         // Data needed for the email template
         const templateData = {
             stripePublishableKey: STRIPE_PUBLISHABLE_KEY,
-            link: `http://localhost:4000/payment/createPaymentMethod/${email}`,
+            link: `${linkConstant.CREATE_PAYMENT_FORM}/${email}`,
         };
 
         // Compile the email template with provided data

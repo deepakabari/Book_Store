@@ -1,7 +1,8 @@
 import { DataTypes } from "sequelize";
-import { Table, Column, Model, BelongsTo, HasMany } from "sequelize-typescript";
+import { Table, Column, Model, BelongsTo, HasMany, AfterUpdate } from "sequelize-typescript";
 import { BookAttributes, BookCreationAttributes } from "../../interfaces";
 import { User, Cart } from "./index";
+import { sendEmailToSeller } from "../../controllers/Book/book.controller";
 
 @Table({
     timestamps: true,
@@ -69,6 +70,18 @@ class Book extends Model<BookAttributes, BookCreationAttributes> {
         foreignKey: "bookId",
     })
     bookCarts: Cart[];
+
+    @AfterUpdate
+    static async sendEmailNotification(book: Book) {
+        if (book.previous("quantity") !== book.quantity) {
+            if (book.quantity === 5 || book.quantity === 0) {
+                const user = await book.$get("user");
+                if (user) {
+                    await sendEmailToSeller(user.email, book, book.quantity === 0);
+                }
+            }
+        }
+    }
 }
 
 export default Book;

@@ -5,6 +5,7 @@ import { Book, Cart, Order, Payment, User } from "../../db/models";
 import { Controller } from "../../interfaces";
 import stripe from "../../db/config/stripe";
 import Stripe from "stripe";
+import linkConstant from "../../constants/link.constant";
 
 // Way 2: 2. Controller to create a Stripe Checkout session for setting up payment methods
 export const createSession: Controller = async (req, res, next) => {
@@ -45,12 +46,12 @@ export const createSession: Controller = async (req, res, next) => {
             line_items: lineItems,
             payment_method_types: ["card"],
             customer: user.stripeCustomerId,
+            success_url: `${linkConstant.SUCCESS}/${userId}?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${linkConstant.CANCEL}`,
             mode: "payment",
             shipping_address_collection: {
                 allowed_countries: ["IN", "RU"],
             },
-            success_url: `http://localhost:4000/card/success/${userId}?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: "http://localhost:4000/card/cancel",
         });
 
         if (!session.url) {
