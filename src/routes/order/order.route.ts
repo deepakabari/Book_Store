@@ -8,6 +8,6 @@ const router: Router = Router();
 
 router.use(isAuth);
 
-router.post("/addOrder", isAuth, celebrate(OrderSchema.add), orderController.addOrder);
+router.post("/addOrder", orderController.addOrder);
 
 export default router;

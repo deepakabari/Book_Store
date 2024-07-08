@@ -11,6 +11,9 @@ interface UserAttributes {
     phoneNumber: string;
     roleId: number;
     role: string;
+    stripeCustomerId?: string;
+    cardHolderId?: string;
+    cardId?: string;
     resetToken?: string | null;
     expireToken?: Date | null;
 }

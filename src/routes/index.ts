@@ -6,6 +6,8 @@ import categoryRoutes from "./category/category.route";
 import commonRoutes from "./common/common.route";
 import cartRoutes from "./cart/cart.route";
 import orderRoutes from "./order/order.route";
+import paymentRoutes from "./payment/payment.route";
+import cardRoutes from "./card/card.route";
 
 const router: Router = Router();
 
@@ -17,5 +19,7 @@ router.use("/category", categoryRoutes);
 router.use("/common", commonRoutes);
 router.use("/cart", cartRoutes);
 router.use("/order", orderRoutes);
+router.use("/payment", paymentRoutes);
+router.use("/card", cardRoutes);
 
 export default router;

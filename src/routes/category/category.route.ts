@@ -10,6 +10,8 @@ router.use(isAuth);
 
 router.get("/getCategories", categoryController.getCategories);
 
+router.get("/categoryById/:categoryId", categoryController.categoryById);
+
 router.post("/createCategory", celebrate(CategorySchema.createCategory), categoryController.createCategory);
 
 router.patch("/category/:id", celebrate(CategorySchema.createCategory), categoryController.updateCategory);

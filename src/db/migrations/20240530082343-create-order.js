@@ -13,9 +13,13 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: false,
             },
-            cartId: {
+            totalAmount: {
                 type: Sequelize.INTEGER,
-                allowNull: false,
+                allowNull: true,
+            },
+            paymentIntentId: {
+                type: Sequelize.STRING,
+                allowNull: true,
             },
             createdAt: {
                 type: Sequelize.DATE,

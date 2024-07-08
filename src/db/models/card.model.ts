@@ -1,13 +1,13 @@
 import { DataTypes } from "sequelize";
-import { Table, Column, Model, BelongsTo, HasMany } from "sequelize-typescript";
-import { BookAttributes, BookCreationAttributes } from "../../interfaces";
-import { User, Cart } from "./index";
+import { Table, Column, Model, BelongsTo } from "sequelize-typescript";
+import { CardAttributes, CardCreationAttributes } from "../../interfaces";
+import { User } from "./index";
 
 @Table({
     timestamps: true,
     paranoid: true,
 })
-class Book extends Model<BookAttributes, BookCreationAttributes> {
+class Card extends Model<CardAttributes, CardCreationAttributes> {
     @Column({
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -24,51 +24,56 @@ class Book extends Model<BookAttributes, BookCreationAttributes> {
 
     @Column({
         type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
+        allowNull: true,
     })
-    name: string;
+    cardId: string;
 
     @Column({
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
     })
-    image: string;
+    cardBrand: string;
 
     @Column({
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
     })
-    description: string;
+    cardHolderName: string;
+
+    @Column({
+        type: DataTypes.STRING,
+        allowNull: true,
+    })
+    cardNumber: string;
+
+    @Column({
+        type: DataTypes.STRING,
+        allowNull: true,
+    })
+    cardLastFour: string;
+
+    @Column({
+        type: DataTypes.STRING,
+        allowNull: true,
+    })
+    tokenId: string;
 
     @Column({
         type: DataTypes.INTEGER,
         allowNull: false,
     })
-    price: number;
+    expMonth: number;
 
     @Column({
         type: DataTypes.INTEGER,
         allowNull: false,
     })
-    categoryId: number;
-
-    @Column({
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        defaultValue: 0,
-    })
-    quantity: number;
+    expYear: number;
 
     @BelongsTo(() => User, {
         foreignKey: "userId",
     })
     user: User;
-
-    @HasMany(() => Cart, {
-        foreignKey: "bookId",
-    })
-    bookCarts: Cart[];
 }
 
-export default Book;
+export default Card;

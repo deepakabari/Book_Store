@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
-import { Table, Column, Model, HasMany } from "sequelize-typescript";
+import { Table, Column, Model, HasMany, HasOne } from "sequelize-typescript";
 import { UserAttributes, UserCreationAttributes } from "../../interfaces/index";
-import { Cart, Order } from "./index";
+import { Card, Cart, Order, Payment } from "./index";
 
 @Table({
     timestamps: true,
@@ -68,6 +68,24 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
         type: DataTypes.STRING,
         allowNull: true,
     })
+    stripeCustomerId?: string;
+
+    @Column({
+        type: DataTypes.STRING,
+        allowNull: true,
+    })
+    cardHolderId?: string;
+
+    @Column({
+        type: DataTypes.STRING,
+        allowNull: true,
+    })
+    cardId?: string;
+
+    @Column({
+        type: DataTypes.STRING,
+        allowNull: true,
+    })
     resetToken: string;
 
     @Column({
@@ -85,6 +103,16 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
         foreignKey: "userId",
     })
     userOrders: Order[];
+
+    @HasMany(() => Card, {
+        foreignKey: "userId",
+    })
+    userCards: Card[];
+
+    @HasOne(() => Payment, {
+        foreignKey: "userId",
+    })
+    payment: Payment;
 }
 
 export default User;

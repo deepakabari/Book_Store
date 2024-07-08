@@ -40,7 +40,7 @@ export const createCategory: Controller = async (req, res, next) => {
             data: newCategory,
         });
     } catch (error) {
-        throw error;
+        next(error);
     }
 };
 
@@ -150,6 +150,7 @@ export const getCategories: Controller = async (req, res, next) => {
         // Define sorting order based on query parameters
         const order = sortBy && orderBy ? ([[sortBy, orderBy]] as Order) : [];
 
+        // Find all categories with pagination and sorting options
         const getCategories = await Category.findAndCountAll({
             order,
             limit,
@@ -160,6 +161,38 @@ export const getCategories: Controller = async (req, res, next) => {
             status: httpCode.OK,
             message: messageConstant.CATEGORY_RETRIEVED,
             data: getCategories,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * @function categoryById
+ * @param req - The request object containing parameters for categoryId
+ * @param res - The response object to send back the retrieved category.
+ * @param next - The next middleware function in the stack.
+ * @returns - A JSON response with the status code and message and data of category by categoryId.
+ * @description - Retrieves a category from the database based on its ID.
+ */
+export const categoryById: Controller = async (req, res, next) => {
+    try {
+        // Extract the category ID from the request
+        const { categoryId } = req.params;
+
+        // Find the category in the database
+        const category = await Category.findOne({ where: { id: categoryId } });
+
+        // If category does not exist, throw an error
+        if (!category) {
+            throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.CATEGORY_NOT_EXISTS);
+        }
+
+        // Return the category data
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.CATEGORY_RETRIEVED,
+            data: category,
         });
     } catch (error) {
         next(error);

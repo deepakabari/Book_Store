@@ -4,7 +4,8 @@ import { Optional } from "sequelize";
 interface OrderAttributes {
     id: number;
     userId: number;
-    cartId: number;
+    totalAmount?: number | null;
+    paymentIntentId?: string;
 }
 
 // Define a type for Category creation attributes by making 'id' optional

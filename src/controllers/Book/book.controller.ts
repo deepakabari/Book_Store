@@ -7,6 +7,7 @@ import { Book, Cart, Category } from "../../db/models";
 import { Order } from "sequelize";
 import { logger } from "../../utils/logger";
 import { ErrorHandler } from "../../middleware/errorHandler";
+import { Op } from "sequelize";
 
 /**
  * @function getAllBooks
@@ -19,7 +20,7 @@ import { ErrorHandler } from "../../middleware/errorHandler";
 export const getAllBooks: Controller = async (req, res, next) => {
     try {
         // Extract query parameters
-        const { sortBy, orderBy, page, pageSize } = req.query;
+        const { sortBy, orderBy, page, pageSize, keyword } = req.query;
 
         // Calculate pagination parameters
         const pageNumber = parseInt(page as string, 10) || 1;
@@ -29,10 +30,21 @@ export const getAllBooks: Controller = async (req, res, next) => {
         // Define sorting order based on query parameters
         const order = sortBy && orderBy ? ([[sortBy, orderBy]] as Order) : [];
 
+        // Query the database to get all books with optional keyword search
         const getAllBooks = await Book.findAndCountAll({
             order,
             limit,
             offset,
+            where: {
+                ...(keyword
+                    ? {
+                          [Op.or]: [
+                              { name: { [Op.like]: `%${keyword}%` } },
+                              { description: { [Op.like]: `%${keyword}%` } },
+                          ],
+                      }
+                    : {}),
+            },
         });
 
         // Return response with block history data
@@ -66,14 +78,10 @@ export const getBookById: Controller = async (req, res, next) => {
             throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.BOOK_NOT_FOUND);
         }
 
-        const getBookById = await Book.findOne({
-            where: { id },
-        });
-
         return res.status(httpCode.OK).json({
             status: httpCode.OK,
             message: messageConstant.BOOK_RETRIEVED,
-            data: getBookById,
+            data: existingBook,
         });
     } catch (error) {
         next(error);
@@ -90,10 +98,29 @@ export const getBookById: Controller = async (req, res, next) => {
  */
 export const getBooks: Controller = async (req, res, next) => {
     try {
-        const id = req.user.id;
+        const { page, pageSize, keyword } = req.query;
+        const userId = req.user.id;
 
-        const getBooks = await Book.findAll({
-            where: { userId: id },
+        // Calculate pagination parameters
+        const pageNumber = parseInt(page as string, 10) || 1;
+        const limit = parseInt(pageSize as string, 10) || 10;
+        const offset = (pageNumber - 1) * limit;
+
+        // Query the database to get all books with optional keyword search
+        const getBooks = await Book.findAndCountAll({
+            where: {
+                userId,
+                ...(keyword
+                    ? {
+                          [Op.or]: [
+                              { name: { [Op.like]: `%${keyword}%` } },
+                              { description: { [Op.like]: `%${keyword}%` } },
+                          ],
+                      }
+                    : {}),
+            },
+            limit,
+            offset,
         });
 
         return res.status(httpCode.OK).json({
@@ -117,7 +144,7 @@ export const getBooks: Controller = async (req, res, next) => {
 export const createBook: Controller = async (req, res, next) => {
     try {
         // Destructuring the request body to get book details
-        const { name, description, price, categoryId } = req.body;
+        const { name, description, price, categoryId, quantity } = req.body;
 
         // Checking if the book already exists in the database
         const existingBook = await Book.findOne({ where: { name } });
@@ -148,6 +175,7 @@ export const createBook: Controller = async (req, res, next) => {
             description,
             price,
             categoryId,
+            quantity,
         });
 
         // If book creation fails, send a BAD_REQUEST error
@@ -184,7 +212,7 @@ export const updateBook: Controller = async (req, res, next) => {
         const { id } = req.params;
 
         // Destructuring the request body to get updated book details
-        const { name, description, price, categoryId } = req.body;
+        const { name, description, price, categoryId, quantity } = req.body;
 
         // Finding the book by its primary key (id)
         const existingBook = await Book.findByPk(id);
@@ -199,17 +227,17 @@ export const updateBook: Controller = async (req, res, next) => {
         }
 
         // Checking if the category exists in the database
-        const category = await Category.findOne({ where: { id: categoryId } });
+        if (categoryId) {
+            const category = await Category.findOne({ where: { id: categoryId } });
 
-        // If category not exists, pass a NOT_FOUND error
-        if (!category) {
-            throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.CATEGORY_NOT_EXISTS);
+            // If category not exists, pass a NOT_FOUND error
+            if (!category) {
+                throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.CATEGORY_NOT_EXISTS);
+            }
         }
 
-        if (req.file) {
-            if (req.file?.filename !== existingBook.image) {
-                clearImage(existingBook.image);
-            }
+        if (req.file && req.file?.filename !== existingBook.image) {
+            clearImage(existingBook.image);
         }
 
         // Updating the book with new details
@@ -220,6 +248,7 @@ export const updateBook: Controller = async (req, res, next) => {
                 description,
                 price,
                 categoryId,
+                quantity,
             },
             { where: { id } },
         );
@@ -262,7 +291,8 @@ export const deleteBook: Controller = async (req, res, next) => {
             throw new ErrorHandler(httpCode.UNAUTHORIZED, messageConstant.NOT_AUTHORIZED);
         }
 
-        if (await Cart.findOne({ where: { bookId: id } })) {
+        const bookInCart = await Cart.findOne({ where: { bookId: id } });
+        if (bookInCart) {
             throw new ErrorHandler(httpCode.BAD_REQUEST, messageConstant.BOOK_IN_CART);
         }
 

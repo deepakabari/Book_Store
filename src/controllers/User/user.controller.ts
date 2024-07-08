@@ -5,8 +5,89 @@ import messageConstant from "../../constants/message.constant";
 import { Status, roles } from "../../utils/enum";
 import bcrypt from "bcrypt";
 import { ErrorHandler } from "../../middleware/errorHandler";
+import { Op, Order } from "sequelize";
 
 const ITERATION = process.env.ITERATION;
+
+/**
+ * @function getUsers
+ * @param req - The request object containing query parameters for sorting and pagination. (optional).
+ * @param res - The response object to send back the retrieved users.
+ * @param next - The next middleware function in the stack.
+ * @returns - A JSON response with the status code and message and data of all users.
+ */
+export const getUsers: Controller = async (req, res, next) => {
+    try {
+        // Extract query parameters from the request
+        const { page, pageSize, keyword, sortBy, orderBy } = req.query;
+
+        // Calculate pagination parameters
+        const pageNumber = parseInt(page as string, 10) || 1;
+        const limit = parseInt(pageSize as string, 10) || 10;
+        const offset = (pageNumber - 1) * limit;
+
+        // Define sorting order based on query parameters
+        const order = sortBy && orderBy ? ([[sortBy, orderBy]] as Order) : [];
+
+        // Query the database to get users with optional keyword search
+        const getUsers = await User.findAndCountAll({
+            where: {
+                ...(keyword
+                    ? {
+                          [Op.or]: [
+                              { firstName: { [Op.like]: `%${keyword}%` } },
+                              { lastName: { [Op.like]: `%${keyword}%` } },
+                          ],
+                      }
+                    : {}),
+            },
+            order,
+            limit,
+            offset,
+        });
+
+        // Return HTTP response with retrieved users data
+        res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.SUCCESS,
+            data: getUsers,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * @function getUserById
+ * @param req - The request object containing parameters for userId.
+ * @param res - The response object to send back the retrieved user.
+ * @param next - The next middleware function in the stack.
+ * @returns - A JSON response with the status code and message and data of user by userId.
+ * @description - Retrieves a user from the database based on its user ID.
+ */
+export const getUserById: Controller = async (req, res, next) => {
+    try {
+        // Extract the userId from request parameters
+        const { userId } = req.params;
+
+        // Query the database to find the user by ID
+        const user = await User.findOne({ where: { id: userId } });
+
+        // If user is not found, throw a user not found error
+        if (!user) {
+            throw new ErrorHandler(httpCode.NOT_FOUND, messageConstant.USER_NOT_EXIST);
+        }
+
+        // Return HTTP response with the retrieved user data
+        return res.status(httpCode.OK).json({
+            status: httpCode.OK,
+            message: messageConstant.USER_RETRIEVED,
+            data: user,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
 
 /**
  * @function createUser
