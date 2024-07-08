@@ -7,6 +7,7 @@ import json2xls from "json2xls";
 import { Controller } from "../../interfaces";
 import { ErrorHandler } from "../../middleware/errorHandler";
 import archiver from "archiver";
+import linkConstant from "../../constants/link.constant";
 
 /**
  * @function viewFile
@@ -146,7 +147,7 @@ export const exportBooks: Controller = async (req, res, next) => {
         do {
             // Fetch a page of book data from the API
             const response = await axios.get(
-                `http://localhost:4000/book/getAllBooks?page=${page}&pageSize=${pageSize}`,
+                `${linkConstant.EXPORT_BOOK}?page=${page}&pageSize=${pageSize}`,
                 {
                     headers: {
                         Authorization: token,

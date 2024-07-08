@@ -8,6 +8,9 @@ import { Order } from "sequelize";
 import { logger } from "../../utils/logger";
 import { ErrorHandler } from "../../middleware/errorHandler";
 import { Op } from "sequelize";
+import { sendEmail } from "../../utils/email";
+import linkConstant from "../../constants/link.constant";
+import { compileEmailTemplate } from "../../utils/hbsCompiler";
 
 /**
  * @function getAllBooks
@@ -309,6 +312,34 @@ export const deleteBook: Controller = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
+};
+
+export const sendEmailToSeller = async (email: string, book: Book, isOutOfStock: boolean) => {
+    const addBookLink = `${linkConstant.BOOK_URL}/${book.id}`;
+    const deleteBookLink = `${linkConstant.BOOK_URL}/${book.id}`;
+    let subject: string;
+    let html: string;
+
+    const reminderTemplate = {
+        book: book.name,
+        addBookLink,
+        deleteBookLink,
+    };
+
+    const lowTemplate = {
+        book: book.name,
+        addBookLink,
+    };
+
+    if (isOutOfStock) {
+        subject = "Book out of stock";
+        html = await compileEmailTemplate("reminder-seller", reminderTemplate);
+    } else {
+        subject = "Reminder to add book quantity";
+        html = await compileEmailTemplate("low-seller", lowTemplate);
+    }
+
+    await sendEmail({ to: email, subject, html });
 };
 
 const clearImage = (image: string) => {
