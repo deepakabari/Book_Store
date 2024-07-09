@@ -70,18 +70,6 @@ class Book extends Model<BookAttributes, BookCreationAttributes> {
         foreignKey: "bookId",
     })
     bookCarts: Cart[];
-
-    @AfterUpdate
-    static async sendEmailNotification(book: Book) {
-        if (book.previous("quantity") !== book.quantity) {
-            if (book.quantity === 5 || book.quantity === 0) {
-                const user = await book.$get("user");
-                if (user) {
-                    await sendEmailToSeller(user.email, book, book.quantity === 0);
-                }
-            }
-        }
-    }
 }
 
 export default Book;

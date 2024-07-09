@@ -8,6 +8,7 @@ const messageConstant = {
     INTERNAL_SERVER_ERROR: "Internal server error",
     UNIQUE_CONSTRAINT: "Email or phone number already exists.",
     EMAIL_NAME_EXISTS: "Email or business name already exists.",
+    USER_NOT_FOUND: "User not found.",
     USER_NOT_EXIST: "User not exist on this email",
     USER_EXIST: "User already exist. Please login!",
     USER_CREATED: "User created successfully",
@@ -22,7 +23,7 @@ const messageConstant = {
     BOOK_DELETED: "Book deleted successfully",
     BOOK_NOT_FOUND: "Book not found",
     BOOK_ALREADY_EXISTS: "Book with same name already exist. Please choose a different name!",
-    BOOK_NAME_UNIQUE: "The book name must be unique. Please choose a different name.",
+    NAME_UNIQUE: "Name must be unique. Please choose a different name.",
     BAD_REQUEST: "Bad request",
     VALIDATION_FAILED: "Validation failed",
     EMAIL_IN_USED: "Email already in use",
@@ -41,6 +42,7 @@ const messageConstant = {
     FILE_NOT_FOUND: "File not found",
     ERROR_DOWNLOAD_FILE: "Error when downloading file",
     CATEGORY_EXISTS: "Category already exists.",
+    CATEGORY_CREATION_FAILED: "Category creation failed",
     CATEGORY_CREATED: "Category created successfully.",
     CATEGORY_NOT_EXISTS: "Category not exists.",
     CATEGORY_UPDATED: "Category updated successfully.",
@@ -80,7 +82,8 @@ const messageConstant = {
     CUSTOMER_EXISTS: "Customer already exists in stripe",
     SETUP_INTENT_FAILED: "Setup Intent was not found.",
     SESSION_URL_MISSING: "Stripe Checkout session URL is missing.",
-    SESSION_FAILED: "Session retrival failed",
+    SESSION_FAILED: "Session retrieval failed",
+    UNABLE_PAYMENT_INTENT_ID: "Unable to retrieve payment intent ID",
 };
 
 export default messageConstant;

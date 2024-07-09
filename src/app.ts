@@ -5,7 +5,7 @@ import { errors } from "celebrate";
 import dotenv from "dotenv";
 import cors from "cors";
 import router from "./routes";
-import { handleError } from "./middleware/errorHandler";
+import { errorHandler } from "./middleware/errorHandler";
 import { dbConnection } from "./db/config";
 import { logger } from "./utils/logger";
 import { engine } from "express-handlebars";
@@ -21,10 +21,10 @@ const PORT = process.env.PORT;
 
 app.engine("hbs", engine({ extname: "hbs", defaultLayout: false }));
 app.set("view engine", "hbs");
-app.set("/templates", path.join(__dirname, "public"));
+app.set("views", path.join(__dirname, "public", "templates"));
 
 // Serve static files from the 'public' directory under the 'images' route
-app.use("/images", express.static(path.join(__dirname, "public")));
+app.use("images", express.static(path.join(__dirname, "public", "images")));
 
 // Parse incoming requests with urlencoded payloads
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -39,6 +39,8 @@ app.use(
     }),
 );
 
+
+
 // Add routing for the application
 app.use(router);
 
@@ -51,7 +53,7 @@ app.use("/", (req: Request, res: Response) => {
 app.use(errors());
 
 // Use custom error handling middleware
-app.use(handleError);
+app.use(errorHandler);
 
 // Establish database connection
 dbConnection();

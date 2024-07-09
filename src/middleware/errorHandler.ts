@@ -3,42 +3,28 @@ import httpCode from "../constants/http.constant";
 import messageConstant from "../constants/message.constant";
 import { logger } from "../utils/logger";
 
-// Define a custom error class
-class ErrorHandler extends Error {
-    status: number;
-    message: string;
-    isStripeError?: boolean;
+export class ErrorHandler extends Error {
+    public statusCode: number;
+    public isOperational: boolean;
 
-    constructor(statusCode: number, message: string, isStripeError: boolean = false) {
-        super();
-        this.status = statusCode;
-        this.message = message;
-        this.isStripeError = isStripeError;
+    constructor(statusCode: number, message: string, isOperational = false) {
+        super(message);
+        this.statusCode = statusCode;
+        this.isOperational = isOperational;
+
+        Error.captureStackTrace(this, this.constructor);
     }
-    getDetails = () => {
-        return {
-            status: this.status,
-            message: this.message,
-        };
-    };
 }
 
-// Middleware for handling errors
-const handleError = (err: ErrorHandler, req: Request, res: Response, next: NextFunction) => {
-    // Check if the error object exists and if it's a Stripe error
-    if (err.isStripeError) {
-        // If it's a Stripe error, send the error details in the response
-        res.status(err.status).json(err.getDetails());
-    } else if (err instanceof ErrorHandler) {
-        // Use the res object to send the error details in the response
-        res.status(err.status).json(err.getDetails());
-    } else {
-        // If it's not an instance of ErrorHandler, send a generic internal server error response
-        res.status(httpCode.INTERNAL_SERVER_ERROR).json({
-            status: httpCode.INTERNAL_SERVER_ERROR,
-            message: messageConstant.INTERNAL_SERVER_ERROR,
-        });
-    }
-};
+export const errorHandler = (error: any, req: Request, res: Response, next: NextFunction) => {
+    const statusCode = error.statusCode || 500;
+    const message = error.message || "Internal Server Error";
 
-export { ErrorHandler, handleError };
+    // Log the error if needed
+    logger.error(error);
+
+    res.status(statusCode).json({
+        status: statusCode,
+        message,
+    });
+};

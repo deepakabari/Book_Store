@@ -3,15 +3,16 @@ import { cartController } from "../../controllers";
 import isAuth from "../../middleware/in-auth";
 import { celebrate } from "celebrate";
 import { CartSchema } from "../../validations";
+import { wrapController } from "../../middleware/wrapController";
 
 const router: Router = Router();
 
-router.post("/addCart", isAuth, celebrate(CartSchema.addCart), cartController.addCart);
+router.post("/addCart", isAuth, celebrate(CartSchema.addCart), wrapController(cartController.addCart));
 
-router.get("/getCart", isAuth, cartController.getCart);
+router.get("/getCart", isAuth, wrapController(cartController.getCart));
 
-router.patch("/cart", isAuth, cartController.updateCart);
+router.patch("/cart", isAuth, wrapController(cartController.updateCart));
 
-router.delete("/cart/:cartId", isAuth, cartController.deleteCart);
+router.delete("/cart/:cartId", isAuth, wrapController(cartController.deleteCart));
 
 export default router;
