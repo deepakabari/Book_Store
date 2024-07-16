@@ -4,6 +4,8 @@ import Category from "./category.model";
 import Cart from "./cart.model";
 import Order from "./order.model";
 import Payment from "./payment.model";
-import Card from "./card.model"
+import Card from "./card.model";
+import Plan from "./plan.model";
+import Subscription from "./subscription.model";
 
-export { User, Book, Category, Cart, Order, Payment, Card };
+export { User, Book, Category, Cart, Order, Payment, Card, Plan, Subscription };

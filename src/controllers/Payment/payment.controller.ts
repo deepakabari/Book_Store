@@ -34,6 +34,7 @@ export const createCustomer: Controller = async (req, res, next) => {
         const customer = await stripe.customers.create({
             name: `${user.firstName} ${user.lastName}`,
             email: user.email,
+            test_clock: "clock_1Pd960RvdTPlq6v7HFOUujgK",
         });
 
         // Save the Stripe customer ID to the user record in the database
@@ -128,6 +129,14 @@ export const addCard: Controller = async (req, res, next) => {
             cardholder: user.cardHolderId,
             currency: "gbp",
             type: "virtual",
+            spending_controls: {
+                spending_limits: [
+                    {
+                        amount: 5000000,
+                        interval: "daily",
+                    },
+                ],
+            },
         });
 
         // Activate the newly created card

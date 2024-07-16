@@ -7,3 +7,6 @@ export * as cartController from "./Cart/cart.controller";
 export * as orderController from "./Order/order.controller";
 export * as paymentController from "./Payment/payment.controller";
 export * as cardController from "./Card/card.controller";
+export * as SubscriptionController from "./Subscription/subscription.controller";
+export * as testClocKController from "./Subscription/TestClock/testclock.controller";
+export * as billingController from "./Subscription/Billing/billing.controller";

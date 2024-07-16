@@ -158,7 +158,7 @@ export const success: Controller = async (req, res, next) => {
     }
     const templateData = {
         src: "../../public/images/success-icon.png",
-        test: "https://www.google.com/imgres?q=payment%20success%20icon&imgurl=https%3A%2F%2Fi.pngimg.me%2Fthumb%2Ff%2F720%2Fm2H7i8N4K9H7d3A0.jpg&imgrefurl=https%3A%2F%2Fnohat.cc%2Ff%2Fconfirm-icon-payment-success%2Fm2H7i8N4K9H7d3A0-202208012237.html&docid=tKcmu44QmA6FAM&tbnid=KubDeLGwbo03oM&vet=12ahUKEwj4rYLXypmHAxX9wzgGHWH-CE0QM3oECG8QAA..i&w=720&h=507&hcb=2&ved=2ahUKEwj4rYLXypmHAxX9wzgGHWH-CE0QM3oECG8QAA"
+        test: "https://www.google.com/imgres?q=payment%20success%20icon&imgurl=https%3A%2F%2Fi.pngimg.me%2Fthumb%2Ff%2F720%2Fm2H7i8N4K9H7d3A0.jpg&imgrefurl=https%3A%2F%2Fnohat.cc%2Ff%2Fconfirm-icon-payment-success%2Fm2H7i8N4K9H7d3A0-202208012237.html&docid=tKcmu44QmA6FAM&tbnid=KubDeLGwbo03oM&vet=12ahUKEwj4rYLXypmHAxX9wzgGHWH-CE0QM3oECG8QAA..i&w=720&h=507&hcb=2&ved=2ahUKEwj4rYLXypmHAxX9wzgGHWH-CE0QM3oECG8QAA",
     };
     // Compile the email template with provided data
     const htmlToSend = await compileEmailTemplate("payment_success", templateData);
@@ -169,4 +169,40 @@ export const success: Controller = async (req, res, next) => {
     // Send the compiled HTML email template as response
     res.send(htmlToSend);
     res.end();
+};
+
+export const addUserCard: Controller = async (req, res, next) => {
+    // Extract necessary details from the request body
+    const { userId, cardName, cardExpYear, cardExpMonth, cardNumber, cardCVC } = req.body;
+
+    // Find the user by their ID
+    const user = await User.findByPk(userId);
+    if (!user || !user.stripeCustomerId) {
+        return next(new ErrorHandler(httpCode.NOT_FOUND, messageConstant.USER_NOT_FOUND));
+    }
+
+    // Create a token for the card using Stripe's API
+    const card_Token = await stripe.tokens.create({
+        card: {
+            name: cardName,
+            number: cardNumber,
+            exp_month: cardExpMonth,
+            exp_year: cardExpYear,
+            cvc: cardCVC,
+        },
+    });
+
+    // Attach the created card token to the user's Stripe customer account
+    const card = await stripe.customers.createSource(user.stripeCustomerId, {
+        source: `${card_Token.id}`,
+    });
+
+    await User.update({ cardId: card.id }, { where: { id: userId } });
+
+    // Return a success response with the card details
+    return res.status(httpCode.OK).json({
+        status: httpCode.OK,
+        message: messageConstant.CARD_SAVED,
+        data: card,
+    });
 };

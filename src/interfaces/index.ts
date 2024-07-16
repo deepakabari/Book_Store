@@ -7,3 +7,5 @@ export * from "./cart.interface";
 export * from "./order.interface";
 export * from "./payment.interface";
 export * from "./card.interface";
+export * from "./plan.interface";
+export * from "./subscription.interface";

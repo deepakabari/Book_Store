@@ -8,6 +8,7 @@ import cartRoutes from "./cart/cart.route";
 import orderRoutes from "./order/order.route";
 import paymentRoutes from "./payment/payment.route";
 import cardRoutes from "./card/card.route";
+import subscriptionRoutes from "./subscription/subscription.route";
 
 const router: Router = Router();
 
@@ -21,5 +22,6 @@ router.use("/cart", cartRoutes);
 router.use("/order", orderRoutes);
 router.use("/payment", paymentRoutes);
 router.use("/card", cardRoutes);
+router.use("/subscription", subscriptionRoutes);
 
 export default router;

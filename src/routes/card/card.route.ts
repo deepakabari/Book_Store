@@ -8,4 +8,6 @@ router.post("/create-checkout-session/:userId", wrapController(cardController.cr
 
 router.get("/success/:userId", wrapController(cardController.success));
 
+router.post("/createUserCard", wrapController(cardController.addUserCard));
+
 export default router;
