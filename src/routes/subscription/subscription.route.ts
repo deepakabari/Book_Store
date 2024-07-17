@@ -2,12 +2,11 @@ import { billingController, SubscriptionController, testClocKController } from "
 import { Router } from "express";
 import isAuth from "../../middleware/in-auth";
 import { wrapController } from "../../middleware/wrapController";
-import express from "express";
 
 // Create a new router object
 const router: Router = Router();
 
-router.post("/webhook", express.raw({ type: 'application/json' }), wrapController(SubscriptionController.webhook));
+router.use(isAuth);
 
 router.get("/retrievePlan/:planId", wrapController(SubscriptionController.retrievePlan));
 
@@ -26,7 +25,5 @@ router.post("/createTestClock", wrapController(testClocKController.CreateTestClo
 router.post("/advanceTestClock", wrapController(testClocKController.advanceTestClock));
 
 router.post("/billing/:userId", wrapController(billingController.createBillingSession));
-
-router.get("/events", wrapController(billingController.retrieveEvent));
 
 export default router;

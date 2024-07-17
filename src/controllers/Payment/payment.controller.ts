@@ -14,6 +14,7 @@ dotenv.config();
 
 const ITERATION = process.env.ITERATION;
 const STRIPE_PUBLISHABLE_KEY = process.env.STRIPE_PUBLISHABLE_KEY;
+const TEST_CLOCK_ID = process.env.TEST_CLOCK
 
 // Way 1 & 2: First create stripe customer
 export const createCustomer: Controller = async (req, res, next) => {
@@ -34,7 +35,7 @@ export const createCustomer: Controller = async (req, res, next) => {
         const customer = await stripe.customers.create({
             name: `${user.firstName} ${user.lastName}`,
             email: user.email,
-            test_clock: "clock_1Pd960RvdTPlq6v7HFOUujgK",
+            test_clock: TEST_CLOCK_ID,
         });
 
         // Save the Stripe customer ID to the user record in the database

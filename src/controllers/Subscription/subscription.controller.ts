@@ -6,6 +6,7 @@ import { Controller } from "../../interfaces";
 import stripe from "../../db/config/stripe";
 import dotenv from "dotenv";
 import Stripe from "stripe";
+import { calculateRefundAmount } from "../../utils/calculateRefund";
 dotenv.config();
 
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET as string;
@@ -97,13 +98,14 @@ export const createSubscription: Controller = async (req, res, next) => {
 
     // Find the user by ID
     const user = await User.findByPk(userId);
+    if (!user) {
+        return next(new ErrorHandler(httpCode.NOT_FOUND, messageConstant.USER_NOT_FOUND));
+    }
 
     // Find the plan by ID
     const plan = await Plan.findByPk(planId);
-
-    // If user or plan is not found, return an error
-    if (!user || !plan) {
-        return next(new ErrorHandler(httpCode.NOT_FOUND, messageConstant.USER_PLAN_NOT_FOUND));
+    if (!plan) {
+        return next(new ErrorHandler(httpCode.NOT_FOUND, messageConstant.PLAN_NOT_FOUND));
     }
 
     // Get the current subscription for the user (if any) that is not set to auto-renew
@@ -127,17 +129,50 @@ export const createSubscription: Controller = async (req, res, next) => {
             const isUpgrade = isBetterPlan(currentPlan.name, plan.name);
 
             if (isUpgrade) {
-                // Cancel the current subscription immediately
-                await stripe.subscriptions.cancel(currentSubscription.stripeSubscriptionId);
+                // Calculate refund amount with 5% commission cut
+                const cancelDate = stripeSubscription.canceled_at as number;
+                const refundAmount = calculateRefundAmount(stripeSubscription, cancelDate);
 
-                // Create a new subscription in Stripe
-                subscription = await stripe.subscriptions.create({
-                    customer: user.stripeCustomerId,
-                    items: [{ plan: plan.stripePlanId }],
-                });
+                if (stripeSubscription.latest_invoice) {
+                    // Fetch the latest invoice if needed
+                    const latestInvoice =
+                        typeof stripeSubscription.latest_invoice === "string"
+                            ? await stripe.invoices.retrieve(stripeSubscription.latest_invoice)
+                            : stripeSubscription.latest_invoice;
 
-                // Save the new subscription in the database
-                await currentSubscription.destroy();
+                    if (latestInvoice.payment_intent) {
+                        // Retrieve the payment intent and create a refund
+                        const paymentIntent = await stripe.paymentIntents.retrieve(
+                            latestInvoice.payment_intent as string,
+                        );
+                        // Create a refund
+                        await stripe.refunds.create({
+                            charge: paymentIntent.latest_charge as string,
+                            amount: Math.round(refundAmount),
+                        });
+                    }
+
+                    // Cancel the current subscription immediately
+                    await stripe.subscriptions.cancel(currentSubscription.stripeSubscriptionId);
+
+                    // Create a new subscription in Stripe
+                    subscription = await stripe.subscriptions.create({
+                        customer: user.stripeCustomerId,
+                        items: [{ plan: plan.stripePlanId }],
+                        expand: ["latest_invoice.payment_intent"],
+                    });
+
+                    // Save the new subscription in the database
+                    await Subscription.create({
+                        userId: user.id,
+                        planId: plan.id,
+                        stripeSubscriptionId: subscription.id,
+                        autoRenew: true,
+                    });
+
+                    // Save the new subscription in the database
+                    await currentSubscription.destroy();
+                }
             } else {
                 // Schedule the new subscription to start after the current subscription ends
                 const subscriptionSchedule = await stripe.subscriptionSchedules.create({
@@ -146,17 +181,13 @@ export const createSubscription: Controller = async (req, res, next) => {
                     end_behavior: "release",
                     phases: [
                         {
-                            items: [
-                                {
-                                    plan: plan.stripePlanId,
-                                },
-                            ],
+                            items: [{ plan: plan.stripePlanId }],
                         },
                     ],
                 });
 
                 // Create a new subscription in the database to start after the current one ends
-                subscription = await Subscription.create({
+                const scheduledSubscription = await Subscription.create({
                     userId: user.id,
                     planId: plan.id,
                     stripeSubscriptionId: subscriptionSchedule.id,
@@ -166,7 +197,7 @@ export const createSubscription: Controller = async (req, res, next) => {
                 return res.status(httpCode.OK).json({
                     status: httpCode.OK,
                     message: messageConstant.SUBSCRIPTION_SCHEDULED,
-                    data: subscription,
+                    data: scheduledSubscription,
                 });
             }
         } else {
@@ -174,25 +205,26 @@ export const createSubscription: Controller = async (req, res, next) => {
             subscription = await stripe.subscriptions.create({
                 customer: user.stripeCustomerId,
                 items: [{ plan: plan.stripePlanId }],
+                expand: ["latest_invoice.payment_intent"],
+            });
+
+            // Save the new subscription in the database
+            await Subscription.create({
+                userId: user.id,
+                planId: plan.id,
+                stripeSubscriptionId: subscription.id,
+                autoRenew: true,
             });
         }
     } else {
         return next(new ErrorHandler(httpCode.BAD_REQUEST, messageConstant.STRIPE_CUSTOMER_NOT_EXISTS));
     }
 
-    // Save the new subscription in the database
-    const newSubscription = await Subscription.create({
-        userId: user.id,
-        planId: plan.id,
-        stripeSubscriptionId: subscription.id,
-        autoRenew: true,
-    });
-
     // Respond with success message and the created subscription
     return res.status(httpCode.OK).json({
         status: httpCode.OK,
         message: messageConstant.SUBSCRIPTION_CREATED,
-        data: newSubscription,
+        data: subscription,
     });
 };
 
@@ -296,28 +328,6 @@ export const webhook: Controller = async (req, res, next) => {
             }
             break;
         }
-        case "customer.subscription.updated": {
-            const subscription = event.data.object as Stripe.Subscription;
-
-            if (subscription.status === "active") {
-                // Find the corresponding subscription schedule in your database
-                const scheduledSubscription = await Subscription.findOne({
-                    where: {
-                        stripeSubscriptionId: subscription.id,
-                        autoRenew: true,
-                    },
-                });
-
-                if (scheduledSubscription) {
-                    // Update the record with the new active subscription ID
-                    scheduledSubscription.stripeSubscriptionId = subscription.id;
-                    await scheduledSubscription.save();
-                } else {
-                    return next(new ErrorHandler(httpCode.NOT_FOUND, messageConstant.SUBSCRIPTION_NOT_FOUND));
-                }
-            }
-            break;
-        }
         case "subscription_schedule.updated": {
             const subscriptionSchedule = event.data.object as Stripe.SubscriptionSchedule;
 
@@ -336,6 +346,8 @@ export const webhook: Controller = async (req, res, next) => {
                 );
             }
 
+            await stripe.subscriptionSchedules.release(subscriptionSchedule.id);
+
             const customer = subscriptionSchedule.customer as string;
             const user = await User.findOne({ where: { stripeCustomerId: customer } });
             if (!user) {
@@ -351,5 +363,5 @@ export const webhook: Controller = async (req, res, next) => {
             console.log(`Unhandled event type ${event.type}`);
     }
 
-    res.sendStatus(200);
+    res.status(httpCode.OK);
 };

@@ -3,6 +3,8 @@ import httpCode from "../../../constants/http.constant";
 import stripe from "../../../db/config/stripe";
 import { Controller } from "../../../interfaces";
 
+const TEST_CLOCK_ID = process.env.TEST_CLOCK as string;
+
 // Controller to create a new test clock in Stripe
 export const CreateTestClock: Controller = async (req, res, next) => {
     // Get the current Unix time (seconds since epoch)
@@ -34,7 +36,7 @@ export const advanceTestClock: Controller = async (req, res, next) => {
     const unixTime = Math.floor(newDate.getTime() / 1000);
 
     // Advance the test clock to the new frozen time
-    const testClock = await stripe.testHelpers.testClocks.advance("clock_1PclkiRvdTPlq6v7XkGqeOPM", {
+    const testClock = await stripe.testHelpers.testClocks.advance(TEST_CLOCK_ID, {
         frozen_time: unixTime,
     });
 

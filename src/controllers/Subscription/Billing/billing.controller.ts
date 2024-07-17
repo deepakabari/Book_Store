@@ -25,13 +25,3 @@ export const createBillingSession: Controller = async (req, res, next) => {
         data: session,
     });
 };
-
-export const retrieveEvent: Controller = async (req, res, next) => {
-    const events = stripe.events.list();
-
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: "Events retrieved successfully.",
-        data: events,
-    });
-};
