@@ -14,7 +14,7 @@ dotenv.config();
 
 const ITERATION = process.env.ITERATION;
 const STRIPE_PUBLISHABLE_KEY = process.env.STRIPE_PUBLISHABLE_KEY;
-const TEST_CLOCK_ID = process.env.TEST_CLOCK
+const TEST_CLOCK_ID = process.env.TEST_CLOCK;
 
 // Way 1 & 2: First create stripe customer
 export const createCustomer: Controller = async (req, res, next) => {

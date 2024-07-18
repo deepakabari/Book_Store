@@ -40,6 +40,18 @@ class Subscription extends Model<SubscriptionAttributes, SubscriptionCreationAtt
     })
     autoRenew: boolean;
 
+    @Column({
+        type: DataTypes.STRING,
+        allowNull: true,
+    })
+    status: string;
+
+    @Column({
+        type: DataTypes.DATE,
+        allowNull: true,
+    })
+    trialEnd: Date;
+
     @BelongsTo(() => User, {
         foreignKey: "userId",
     })

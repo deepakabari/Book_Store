@@ -99,6 +99,10 @@ const messageConstant = {
     PLAN_RETRIEVED: "Plan retrieved successfully",
     SUBSCRIPTION_ALREADY_EXISTS: "Subscription already exists.",
     TEST_CLOCK_CREATED: "Test clock created successfully",
+    TAX_RATE_CREATED: "Tax rate created successfully.",
+    TAX_RATE_NOT_FOUND: "Tax rate not found.",
+    TAX_RATE_RETRIEVED: "Tax rate retrieved successfully.",
+    TAX_RATE_EXISTS: "Tax rate already exists.",
 };
 
 export default messageConstant;

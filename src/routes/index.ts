@@ -9,6 +9,7 @@ import orderRoutes from "./order/order.route";
 import paymentRoutes from "./payment/payment.route";
 import cardRoutes from "./card/card.route";
 import subscriptionRoutes from "./subscription/subscription.route";
+import taxRateRoutes from "./subscription/taxRate.route";
 
 const router: Router = Router();
 
@@ -23,5 +24,6 @@ router.use("/order", orderRoutes);
 router.use("/payment", paymentRoutes);
 router.use("/card", cardRoutes);
 router.use("/subscription", subscriptionRoutes);
+router.use("/tax", taxRateRoutes);
 
 export default router;

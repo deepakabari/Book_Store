@@ -7,6 +7,8 @@ interface SubscriptionAttributes {
     planId: number;
     stripeSubscriptionId: string;
     autoRenew: boolean;
+    status?: string;
+    trialEnd?: Date | null;
 }
 
 // Define a type for Subscription creation attributes by making 'id' optional

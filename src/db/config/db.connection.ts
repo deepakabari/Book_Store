@@ -3,7 +3,18 @@ import { Sequelize } from "sequelize-typescript";
 import { logger } from "../../utils/logger";
 import dotenv from "dotenv";
 dotenv.config();
-import { User, Book, Category, Cart, Order, Payment, Card, Plan, Subscription } from "../models/index";
+import {
+    User,
+    Book,
+    Category,
+    Cart,
+    Order,
+    Payment,
+    Card,
+    Plan,
+    Subscription,
+    TaxRate,
+} from "../models/index";
 
 // Retrieve the current environment or default to 'development'
 const env = process.env.NODE_ENV as string;
@@ -19,7 +30,7 @@ export const sequelize = new Sequelize(database, username, password, {
     define: {
         freezeTableName: true,
     },
-    models: [User, Book, Category, Cart, Order, Payment, Card, Plan, Subscription],
+    models: [User, Book, Category, Cart, Order, Payment, Card, Plan, Subscription, TaxRate],
     logging: (msg) => {
         // Log a message when the database connection is established
         if (msg === "Executing (default): SELECT 1+1 AS result") {

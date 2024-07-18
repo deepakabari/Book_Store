@@ -7,6 +7,7 @@ import stripe from "../../db/config/stripe";
 import dotenv from "dotenv";
 import Stripe from "stripe";
 import { calculateRefundAmount } from "../../utils/calculateRefund";
+import { Status } from "../../utils/enum";
 dotenv.config();
 
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET as string;
@@ -19,7 +20,7 @@ const isBetterPlan = (currentPlan: string, newPlan: string) => {
 // Function to create a new plan in Stripe and save it in the database
 export const createPlan: Controller = async (req, res, next) => {
     // Extract name and price from the request body
-    const { name, price } = req.body;
+    const { name, price, trialEligible } = req.body;
 
     // Check if a plan with the same name already exists in the database
     const existingPlan = await Plan.findOne({ where: { name } });
@@ -58,6 +59,7 @@ export const createPlan: Controller = async (req, res, next) => {
         price,
         stripePlanId: plan.id,
         stripePriceId: stripePrice.id,
+        trialEligible,
     });
 
     // Respond with success message and the created plan
@@ -94,7 +96,7 @@ export const retrievePlan: Controller = async (req, res, next) => {
 
 // Function to create a new subscription for a user
 export const createSubscription: Controller = async (req, res, next) => {
-    const { userId, planId } = req.body;
+    const { userId, planId, taxRateIds } = req.body;
 
     // Find the user by ID
     const user = await User.findByPk(userId);
@@ -159,7 +161,8 @@ export const createSubscription: Controller = async (req, res, next) => {
                     subscription = await stripe.subscriptions.create({
                         customer: user.stripeCustomerId,
                         items: [{ plan: plan.stripePlanId }],
-                        expand: ["latest_invoice.payment_intent"],
+                        default_tax_rates: taxRateIds,
+                        trial_period_days: plan.trialEligible ? 7 : undefined,
                     });
 
                     // Save the new subscription in the database
@@ -168,6 +171,8 @@ export const createSubscription: Controller = async (req, res, next) => {
                         planId: plan.id,
                         stripeSubscriptionId: subscription.id,
                         autoRenew: true,
+                        status: Status.Active,
+                        trialEnd: plan.trialEligible ? new Date(subscription.trial_end! * 1000) : null,
                     });
 
                     // Save the new subscription in the database
@@ -182,6 +187,7 @@ export const createSubscription: Controller = async (req, res, next) => {
                     phases: [
                         {
                             items: [{ plan: plan.stripePlanId }],
+                            default_tax_rates: taxRateIds,
                         },
                     ],
                 });
@@ -192,6 +198,7 @@ export const createSubscription: Controller = async (req, res, next) => {
                     planId: plan.id,
                     stripeSubscriptionId: subscriptionSchedule.id,
                     autoRenew: true,
+                    status: Status.Active,
                 });
 
                 return res.status(httpCode.OK).json({
@@ -205,7 +212,8 @@ export const createSubscription: Controller = async (req, res, next) => {
             subscription = await stripe.subscriptions.create({
                 customer: user.stripeCustomerId,
                 items: [{ plan: plan.stripePlanId }],
-                expand: ["latest_invoice.payment_intent"],
+                default_tax_rates: taxRateIds,
+                trial_period_days: plan.trialEligible ? 7 : undefined,
             });
 
             // Save the new subscription in the database
@@ -214,6 +222,8 @@ export const createSubscription: Controller = async (req, res, next) => {
                 planId: plan.id,
                 stripeSubscriptionId: subscription.id,
                 autoRenew: true,
+                status: Status.Active,
+                trialEnd: plan.trialEligible ? new Date(subscription.trial_end! * 1000) : null,
             });
         }
     } else {
@@ -278,6 +288,23 @@ export const cancelSubscription: Controller = async (req, res, next) => {
         status: httpCode.OK,
         message: messageConstant.SUBSCRIPTION_CANCELED,
         data: subscription,
+    });
+};
+
+export const cancelDirect: Controller = async (req, res, next) => {
+    // Extract subscription id from request query parameters
+    const subId = req.query.subId as string;
+
+    const stripeSub = await stripe.subscriptions.cancel(subId, {
+        prorate: true,
+    });
+
+    await Subscription.destroy({ where: { stripeSubscriptionId: subId } });
+
+    return res.status(httpCode.OK).json({
+        status: httpCode.OK,
+        message: messageConstant.SUBSCRIPTION_CANCELED,
+        data: stripeSub,
     });
 };
 

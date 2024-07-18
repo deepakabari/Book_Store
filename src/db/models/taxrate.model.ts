@@ -1,12 +1,12 @@
 import { DataTypes } from "sequelize";
 import { Table, Column, Model } from "sequelize-typescript";
-import { PlanAttributes, PlanCreationAttributes } from "../../interfaces";
+import { TaxRateAttributes, TaxRateCreationAttributes } from "../../interfaces";
 
 @Table({
     timestamps: true,
     paranoid: true,
 })
-class Plan extends Model<PlanAttributes, PlanCreationAttributes> {
+class TaxRate extends Model<TaxRateAttributes, TaxRateCreationAttributes> {
     @Column({
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -18,34 +18,38 @@ class Plan extends Model<PlanAttributes, PlanCreationAttributes> {
     @Column({
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
     })
-    name: string;
-
-    @Column({
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    })
-    price: number;
+    stripeTaxRateId: string;
 
     @Column({
         type: DataTypes.STRING,
         allowNull: false,
     })
-    stripePlanId: string;
+    displayName: string;
+
+    @Column({
+        type: DataTypes.STRING,
+        allowNull: true,
+    })
+    description: string;
 
     @Column({
         type: DataTypes.STRING,
         allowNull: false,
     })
-    stripePriceId: string;
+    jurisdiction: string;
+
+    @Column({
+        type: DataTypes.FLOAT,
+        allowNull: false,
+    })
+    percentage: number;
 
     @Column({
         type: DataTypes.BOOLEAN,
         allowNull: false,
-        defaultValue: false,
     })
-    trialEligible: boolean;
+    inclusive: boolean;
 }
 
-export default Plan;
+export default TaxRate;

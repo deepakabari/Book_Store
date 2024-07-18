@@ -26,4 +26,8 @@ router.post("/advanceTestClock", wrapController(testClocKController.advanceTestC
 
 router.post("/billing/:userId", wrapController(billingController.createBillingSession));
 
+router.post("/checkoutSub", wrapController(billingController.checkoutSub));
+
+router.post("/cancelSub", wrapController(SubscriptionController.cancelDirect));
+
 export default router;

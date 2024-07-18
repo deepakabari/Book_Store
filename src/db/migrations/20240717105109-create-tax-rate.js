@@ -2,37 +2,36 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable("Subscription", {
+        await queryInterface.createTable("TaxRate", {
             id: {
-                type: Sequelize.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
-            },
-            userId: {
                 type: Sequelize.INTEGER,
-                allowNull: false,
             },
-            planId: {
-                type: Sequelize.INTEGER,
-                allowNull: false,
-            },
-            stripeSubscriptionId: {
+            stripeTaxRateId: {
                 type: Sequelize.STRING,
                 allowNull: false,
             },
-            autoRenew: {
+            displayName: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            description: {
+                type: Sequelize.STRING,
+                allowNull: true,
+            },
+            jurisdiction: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            percentage: {
+                type: Sequelize.FLOAT,
+                allowNull: false,
+            },
+            inclusive: {
                 type: Sequelize.BOOLEAN,
                 allowNull: false,
-                defaultValue: true,
-            },
-            status: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-            trialEnd: {
-                type: Sequelize.DATE,
-                allowNull: true,
             },
             createdAt: {
                 type: Sequelize.DATE,
@@ -49,6 +48,6 @@ module.exports = {
         });
     },
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable("Subscription");
+        await queryInterface.dropTable("TaxRate");
     },
 };

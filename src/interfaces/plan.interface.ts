@@ -7,6 +7,7 @@ interface PlanAttributes {
     price: number;
     stripePlanId: string;
     stripePriceId: string;
+    trialEligible: boolean;
 }
 
 // Define a type for Plan creation attributes by making 'id' optional

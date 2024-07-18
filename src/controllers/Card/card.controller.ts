@@ -142,17 +142,6 @@ export const success: Controller = async (req, res, next) => {
             { where: { id: bookId }, individualHooks: true },
         );
 
-        Book.afterUpdate(async (book: Book) => {
-            if (book.previous("quantity") !== book.quantity) {
-                if (book.quantity <= 5 || book.quantity === 0) {
-                    const user = await book.$get("user");
-                    if (user) {
-                        await sendEmailToSeller(user.email, book, book.quantity === 0);
-                    }
-                }
-            }
-        });
-
         // remove cart item after order is placed
         await Cart.destroy({ where: { id: cartItem.id } });
     }
