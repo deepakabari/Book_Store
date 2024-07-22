@@ -330,7 +330,7 @@ export const cancelDirect: Controller = async (req, res, next) => {
     });
 };
 
-export const pauseSubscription: Controller = async (req, res, next) => {
+export const pauseCollection: Controller = async (req, res, next) => {
     // Get the subscription ID from the query parameters
     const subscriptionId = req.query.subscriptionId as string;
 
@@ -393,24 +393,6 @@ export const webhook: Controller = async (req, res, next) => {
 
     // Handle the event
     switch (event.type) {
-        case "invoice.payment_succeeded": {
-            const invoice = event.data.object as Stripe.Invoice;
-            const subscriptionId = invoice.subscription as string;
-
-            // Find the corresponding subscription schedule in your database
-            const scheduledSubscription = await Subscription.findOne({
-                where: { stripeSubscriptionId: subscriptionId },
-            });
-
-            if (scheduledSubscription) {
-                // Update the subscription record with the new active subscription ID
-                scheduledSubscription.stripeSubscriptionId = subscriptionId;
-                await scheduledSubscription.save();
-            } else {
-                return next(new ErrorHandler(httpCode.NOT_FOUND, messageConstant.SUBSCRIPTION_NOT_FOUND));
-            }
-            break;
-        }
         case "subscription_schedule.updated": {
             const subscriptionSchedule = event.data.object as Stripe.SubscriptionSchedule;
 
@@ -442,9 +424,19 @@ export const webhook: Controller = async (req, res, next) => {
 
             break;
         }
+        case "customer.subscription.deleted": {
+            const subscriptionId = event.data.object as Stripe.Subscription;
+
+            const subId = subscriptionId.id;
+
+            Subscription.destroy({ where: { stripeSubscriptionId: subId } });
+
+            break;
+        }
+
         default:
             console.log(`Unhandled event type ${event.type}`);
     }
 
-    res.status(httpCode.OK);
+    res.status(httpCode.OK).json({ status: httpCode.OK, message: "Received Webhook event" });
 };

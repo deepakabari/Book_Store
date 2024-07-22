@@ -20,6 +20,10 @@ export const createDiscount: Controller = async (req, res, next) => {
         percent_off: percentage,
     });
 
+    await stripe.promotionCodes.create({
+        coupon: coupon.id,
+    });
+
     // Create new discount
     const discount = await Discount.create({
         code: name,

@@ -11,6 +11,7 @@ import { logger } from "./utils/logger";
 import { engine } from "express-handlebars";
 import { wrapController } from "./middleware/wrapController";
 import { SubscriptionController } from "./controllers";
+import helmet from "helmet";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -20,6 +21,8 @@ const app: Express = express();
 
 // Retrieve the port number from environment variables
 const PORT = process.env.PORT;
+
+app.use(helmet());
 
 // Middleware to parse raw JSON bodies for Stripe webhook
 app.post(
