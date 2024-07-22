@@ -1,7 +1,7 @@
 import httpCode from "../../constants/http.constant";
 import messageConstant from "../../constants/message.constant";
 import { ErrorHandler } from "../../middleware/errorHandler";
-import { Plan, Subscription, User } from "../../db/models";
+import { Discount, Plan, Subscription, User } from "../../db/models";
 import { Controller } from "../../interfaces";
 import stripe from "../../db/config/stripe";
 import dotenv from "dotenv";
@@ -96,7 +96,7 @@ export const retrievePlan: Controller = async (req, res, next) => {
 
 // Function to create a new subscription for a user
 export const createSubscription: Controller = async (req, res, next) => {
-    const { userId, planId, taxRateIds } = req.body;
+    const { userId, planId, taxRateIds, discountCode } = req.body;
 
     // Find the user by ID
     const user = await User.findByPk(userId);
@@ -119,7 +119,27 @@ export const createSubscription: Controller = async (req, res, next) => {
         stripeSubscription = await stripe.subscriptions.retrieve(currentSubscription.stripeSubscriptionId);
     }
 
-    let subscription;
+    let subscription, discount;
+
+    // Validate discount code if provided
+    if (discountCode) {
+        discount = await Discount.findOne({ where: { code: discountCode, isActive: true } });
+        if (!discount) {
+            return next(new ErrorHandler(httpCode.BAD_REQUEST, messageConstant.INVALID_COUPON_CODE));
+        }
+        if (plan.price < discount.minPrice) {
+            return next(
+                new ErrorHandler(
+                    httpCode.BAD_REQUEST,
+                    `Discount code ${discountCode} is not valid for subscriptions below ${discount.minPrice} GBP.`,
+                ),
+            );
+        }
+        if (discount.maxPercentage && discount.percentage > discount.maxPercentage) {
+            discount.percentage = discount.maxPercentage;
+        }
+    }
+
     if (user.stripeCustomerId) {
         if (currentSubscription && stripeSubscription) {
             // Determine if new plan is better or worse than current plan
@@ -163,6 +183,7 @@ export const createSubscription: Controller = async (req, res, next) => {
                         items: [{ plan: plan.stripePlanId }],
                         default_tax_rates: taxRateIds,
                         trial_period_days: plan.trialEligible ? 7 : undefined,
+                        discounts: discount ? [{ coupon: discount.stripeCouponId }] : undefined,
                     });
 
                     // Save the new subscription in the database
@@ -188,6 +209,7 @@ export const createSubscription: Controller = async (req, res, next) => {
                         {
                             items: [{ plan: plan.stripePlanId }],
                             default_tax_rates: taxRateIds,
+                            discounts: discount ? [{ coupon: discount.stripeCouponId }] : undefined,
                         },
                     ],
                 });
@@ -214,6 +236,7 @@ export const createSubscription: Controller = async (req, res, next) => {
                 items: [{ plan: plan.stripePlanId }],
                 default_tax_rates: taxRateIds,
                 trial_period_days: plan.trialEligible ? 7 : undefined,
+                discounts: discount ? [{ coupon: discount.stripeCouponId }] : undefined,
             });
 
             // Save the new subscription in the database
@@ -277,11 +300,10 @@ export const cancelSubscription: Controller = async (req, res, next) => {
         cancel_at_period_end: true,
     });
 
-    // Toggle the auto-renew option in the local database
-    existingSubscription.autoRenew = false;
-
-    // Save the updated subscription in the database
-    await existingSubscription.save();
+    await existingSubscription.update(
+        { autoRenew: false, status: Status.Inactive },
+        { where: { stripeSubscriptionId: subscriptionId } },
+    );
 
     // Respond with success message
     return res.status(httpCode.OK).json({
@@ -308,21 +330,55 @@ export const cancelDirect: Controller = async (req, res, next) => {
     });
 };
 
-export const resumeSubscription: Controller = async (req, res, next) => {
+export const pauseSubscription: Controller = async (req, res, next) => {
+    // Get the subscription ID from the query parameters
     const subscriptionId = req.query.subscriptionId as string;
 
-    // Find the subscription by ID
+    // Find the subscription in the database using the Stripe subscription ID
     const existingSubscription = await Subscription.findOne({ where: { stripeSubscriptionId: subscriptionId } });
 
-    // If subscription is not found, return an error
+    // If the subscription is not found, return a 404 error
     if (!existingSubscription) {
         return next(new ErrorHandler(httpCode.NOT_FOUND, messageConstant.SUBSCRIPTION_NOT_FOUND));
     }
 
-    const subscription = await stripe.subscriptions.resume(subscriptionId, {
-        billing_cycle_anchor: "unchanged",
+    // Pause the subscription in Stripe by updating its 'pause_collection' property
+    const subscription = await stripe.subscriptions.update(subscriptionId, {
+        pause_collection: {
+            behavior: "mark_uncollectible",
+        },
     });
 
+    // Respond with a success message and the updated subscription data
+    return res.status(httpCode.OK).json({
+        status: httpCode.OK,
+        message: "Subscription paused successfully.",
+        data: subscription,
+    });
+};
+
+export const resumeSubscription: Controller = async (req, res, next) => {
+    // Get the subscription ID from the query parameters
+    const subscriptionId = req.query.subscriptionId as string;
+
+    // Find the subscription in the database using the Stripe subscription ID
+    const existingSubscription = await Subscription.findOne({ where: { stripeSubscriptionId: subscriptionId } });
+
+    // If the subscription is not found, return a 404 error
+    if (!existingSubscription) {
+        return next(new ErrorHandler(httpCode.NOT_FOUND, messageConstant.SUBSCRIPTION_NOT_FOUND));
+    }
+
+    // Resume the subscription in Stripe by setting 'pause_collection' to null
+    const subscription = await stripe.subscriptions.update(subscriptionId, {
+        pause_collection: null,
+    });
+
+    // Update the 'autoRenew' property of the subscription in the database to true
+    existingSubscription.autoRenew = true;
+    existingSubscription.save();
+
+    // Respond with a success message and the updated subscription data
     return res.status(httpCode.OK).json({
         status: httpCode.OK,
         message: messageConstant.SUBSCRIPTION_RESUMED,

@@ -8,5 +8,6 @@ import Card from "./card.model";
 import Plan from "./plan.model";
 import Subscription from "./subscription.model";
 import TaxRate from "./taxrate.model";
+import Discount from "./discount.model";
 
-export { User, Book, Category, Cart, Order, Payment, Card, Plan, Subscription, TaxRate };
+export { User, Book, Category, Cart, Order, Payment, Card, Plan, Subscription, TaxRate, Discount };

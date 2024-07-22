@@ -103,6 +103,9 @@ const messageConstant = {
     TAX_RATE_NOT_FOUND: "Tax rate not found.",
     TAX_RATE_RETRIEVED: "Tax rate retrieved successfully.",
     TAX_RATE_EXISTS: "Tax rate already exists.",
+    DISCOUNT_EXISTS: "Discount code already exists.",
+    DISCOUNT_CREATED: "Discount created successfully",
+    INVALID_COUPON_CODE: "Invalid or inactive discount code.",
 };
 
 export default messageConstant;

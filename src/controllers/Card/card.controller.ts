@@ -159,39 +159,3 @@ export const success: Controller = async (req, res, next) => {
     res.send(htmlToSend);
     res.end();
 };
-
-export const addUserCard: Controller = async (req, res, next) => {
-    // Extract necessary details from the request body
-    const { userId, cardName, cardExpYear, cardExpMonth, cardNumber, cardCVC } = req.body;
-
-    // Find the user by their ID
-    const user = await User.findByPk(userId);
-    if (!user || !user.stripeCustomerId) {
-        return next(new ErrorHandler(httpCode.NOT_FOUND, messageConstant.USER_NOT_FOUND));
-    }
-
-    // Create a token for the card using Stripe's API
-    const card_Token = await stripe.tokens.create({
-        card: {
-            name: cardName,
-            number: cardNumber,
-            exp_month: cardExpMonth,
-            exp_year: cardExpYear,
-            cvc: cardCVC,
-        },
-    });
-
-    // Attach the created card token to the user's Stripe customer account
-    const card = await stripe.customers.createSource(user.stripeCustomerId, {
-        source: `${card_Token.id}`,
-    });
-
-    await User.update({ cardId: card.id }, { where: { id: userId } });
-
-    // Return a success response with the card details
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.CARD_SAVED,
-        data: card,
-    });
-};

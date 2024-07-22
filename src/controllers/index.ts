@@ -10,3 +10,4 @@ export * as cardController from "./Card/card.controller";
 export * as SubscriptionController from "./Subscription/subscription.controller";
 export * as testClocKController from "./Subscription/TestClock/testclock.controller";
 export * as billingController from "./Subscription/Billing/billing.controller";
+export * as discountController from "./Subscription/Billing/discount.controller";

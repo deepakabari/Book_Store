@@ -14,6 +14,7 @@ import {
     Plan,
     Subscription,
     TaxRate,
+    Discount,
 } from "../models/index";
 
 // Retrieve the current environment or default to 'development'
@@ -30,7 +31,7 @@ export const sequelize = new Sequelize(database, username, password, {
     define: {
         freezeTableName: true,
     },
-    models: [User, Book, Category, Cart, Order, Payment, Card, Plan, Subscription, TaxRate],
+    models: [User, Book, Category, Cart, Order, Payment, Card, Plan, Subscription, TaxRate, Discount],
     logging: (msg) => {
         // Log a message when the database connection is established
         if (msg === "Executing (default): SELECT 1+1 AS result") {

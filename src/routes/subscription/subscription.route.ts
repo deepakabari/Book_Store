@@ -30,4 +30,6 @@ router.post("/checkoutSub", wrapController(billingController.checkoutSub));
 
 router.post("/cancelSub", wrapController(SubscriptionController.cancelDirect));
 
+router.post("/pauseSubscription", wrapController(SubscriptionController.pauseSubscription));
+
 export default router;

@@ -10,3 +10,4 @@ export * from "./card.interface";
 export * from "./plan.interface";
 export * from "./subscription.interface";
 export * from "./taxRate.interface";
+export * from "./discount.interface";

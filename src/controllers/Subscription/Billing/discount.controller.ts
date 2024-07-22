@@ -1,0 +1,39 @@
+import httpCode from "../../../constants/http.constant";
+import messageConstant from "../../../constants/message.constant";
+import { ErrorHandler } from "../../../middleware/errorHandler";
+import { Discount } from "../../../db/models";
+import { Controller } from "../../../interfaces";
+import stripe from "../../../db/config/stripe";
+
+export const createDiscount: Controller = async (req, res, next) => {
+    const { name, description, percentage, minPrice, maxPercentage } = req.body;
+
+    // Check if the discount code already exists
+    const existingDiscount = await Discount.findOne({ where: { code: name } });
+    if (existingDiscount) {
+        return next(new ErrorHandler(httpCode.BAD_REQUEST, messageConstant.DISCOUNT_EXISTS));
+    }
+
+    // Create a coupon in Stripe based on the discount percentage
+    const coupon = await stripe.coupons.create({
+        name,
+        percent_off: percentage,
+    });
+
+    // Create new discount
+    const discount = await Discount.create({
+        code: name,
+        stripeCouponId: coupon.id,
+        description,
+        percentage,
+        minPrice,
+        maxPercentage,
+        isActive: true,
+    });
+
+    return res.status(httpCode.OK).json({
+        status: httpCode.OK,
+        message: messageConstant.DISCOUNT_CREATED,
+        data: discount,
+    });
+};

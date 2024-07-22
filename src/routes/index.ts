@@ -10,6 +10,7 @@ import paymentRoutes from "./payment/payment.route";
 import cardRoutes from "./card/card.route";
 import subscriptionRoutes from "./subscription/subscription.route";
 import taxRateRoutes from "./subscription/taxRate.route";
+import discountRoutes from "./subscription/discount.route";
 
 const router: Router = Router();
 
@@ -25,5 +26,6 @@ router.use("/payment", paymentRoutes);
 router.use("/card", cardRoutes);
 router.use("/subscription", subscriptionRoutes);
 router.use("/tax", taxRateRoutes);
+router.use("/discount", discountRoutes);
 
 export default router;
