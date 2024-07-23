@@ -4,6 +4,7 @@ import messageConstant from "../../constants/message.constant";
 import { Book, Category } from "../../db/models";
 import { Controller } from "../../interfaces";
 import { ErrorHandler } from "../../middleware/errorHandler";
+import { sendSuccessResponse } from "../../middleware/responseHandler";
 
 /**
  * @function createCategory
@@ -37,11 +38,7 @@ export const createCategory: Controller = async (req, res, next) => {
     }
 
     // Return the new category data with an OK status
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.CATEGORY_CREATED,
-        data: newCategory,
-    });
+    return sendSuccessResponse(res, messageConstant.CATEGORY_CREATED, newCategory);
 };
 
 /**
@@ -69,10 +66,7 @@ export const updateCategory: Controller = async (req, res, next) => {
     await Category.update({ name }, { where: { id } });
 
     // Return an OK status with a message indicating the update was successful
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.CATEGORY_UPDATED,
-    });
+    return sendSuccessResponse(res, messageConstant.CATEGORY_UPDATED);
 };
 
 /**
@@ -111,10 +105,7 @@ export const deleteCategory: Controller = async (req, res, next) => {
     });
 
     // Return a success response
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.CATEGORY_DELETED,
-    });
+    return sendSuccessResponse(res, messageConstant.CATEGORY_DELETED);
 };
 
 /**
@@ -144,11 +135,7 @@ export const getCategories: Controller = async (req, res, next) => {
         offset,
     });
 
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.CATEGORY_RETRIEVED,
-        data: getCategories,
-    });
+    return sendSuccessResponse(res, messageConstant.CATEGORY_RETRIEVED, getCategories);
 };
 
 /**
@@ -172,9 +159,5 @@ export const categoryById: Controller = async (req, res, next) => {
     }
 
     // Return the category data
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.CATEGORY_RETRIEVED,
-        data: category,
-    });
+    return sendSuccessResponse(res, messageConstant.CATEGORY_RETRIEVED, category);
 };

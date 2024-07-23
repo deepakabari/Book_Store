@@ -3,6 +3,7 @@ import { Book, Cart, User } from "../../db/models";
 import { Controller } from "../../interfaces";
 import httpCode from "../../constants/http.constant";
 import messageConstant from "../../constants/message.constant";
+import { sendSuccessResponse } from "../../middleware/responseHandler";
 
 export const getCart: Controller = async (req, res, next) => {
     const userId = req.user.id;
@@ -33,11 +34,7 @@ export const getCart: Controller = async (req, res, next) => {
     }, 0);
 
     // Respond with a success status and the cart contents
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.CART_RETRIEVED,
-        data: { cart, totalAmount },
-    });
+    return sendSuccessResponse(res, messageConstant.CARDS_RETRIEVED, { cart, totalAmount });
 };
 
 export const addCart: Controller = async (req, res, next) => {
@@ -53,11 +50,7 @@ export const addCart: Controller = async (req, res, next) => {
     if (cart) {
         await cart.increment("quantity", { by: 1 });
         // Respond with a success status and the updated cart entry
-        return res.status(httpCode.OK).json({
-            status: httpCode.OK,
-            message: messageConstant.CART_QUANTITY_UPDATED,
-            data: cart,
-        });
+        return sendSuccessResponse(res, messageConstant.CART_QUANTITY_UPDATED, cart);
     }
 
     const book = await Book.findByPk(bookId);
@@ -80,11 +73,7 @@ export const addCart: Controller = async (req, res, next) => {
     });
 
     // Respond with a success status and the new cart entry
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.BOOK_ADDED_IN_CART,
-        data: newCart,
-    });
+    return sendSuccessResponse(res, messageConstant.BOOK_ADDED_IN_CART, newCart);
 };
 
 export const updateCart: Controller = async (req, res, next) => {
@@ -109,10 +98,7 @@ export const updateCart: Controller = async (req, res, next) => {
         { where: { bookId, userId, isPlaced: false } },
     );
 
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.CART_UPDATED,
-    });
+    return sendSuccessResponse(res, messageConstant.CART_UPDATED);
 };
 
 export const deleteCart: Controller = async (req, res, next) => {
@@ -125,8 +111,5 @@ export const deleteCart: Controller = async (req, res, next) => {
 
     await Cart.destroy({ where: { id: cartId } });
 
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.CART_DELETED,
-    });
+    return sendSuccessResponse(res, messageConstant.CART_DELETED);
 };

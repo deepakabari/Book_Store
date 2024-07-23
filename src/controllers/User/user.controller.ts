@@ -6,6 +6,7 @@ import { Status, roles } from "../../utils/enum";
 import bcrypt from "bcrypt";
 import { ErrorHandler } from "../../middleware/errorHandler";
 import { Op, Order } from "sequelize";
+import { sendSuccessResponse } from "../../middleware/responseHandler";
 
 const ITERATION = process.env.ITERATION;
 
@@ -50,11 +51,7 @@ export const getUsers: Controller = async (req, res, next) => {
     }
 
     // Return HTTP response with retrieved users data
-    res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.SUCCESS,
-        data: getUsers,
-    });
+    return sendSuccessResponse(res, messageConstant.SUCCESS, getUsers);
 };
 
 /**
@@ -78,11 +75,7 @@ export const getUserById: Controller = async (req, res, next) => {
     }
 
     // Return HTTP response with the retrieved user data
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.USER_RETRIEVED,
-        data: user,
-    });
+    return sendSuccessResponse(res, messageConstant.USER_RETRIEVED, user);
 };
 
 /**
@@ -137,11 +130,7 @@ export const createUser: Controller = async (req, res, next) => {
     }
 
     // On successful creation, return the new user data with an OK status
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.USER_CREATED,
-        data: newUser,
-    });
+    return sendSuccessResponse(res, messageConstant.USER_CREATED, newUser);
 };
 
 /**
@@ -187,10 +176,7 @@ export const updateUser: Controller = async (req, res, next) => {
     );
 
     // Return a success response
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.USER_UPDATED,
-    });
+    return sendSuccessResponse(res, messageConstant.USER_UPDATED);
 };
 
 /**
@@ -223,8 +209,5 @@ export const deleteUser: Controller = async (req, res, next) => {
     await User.destroy({ where: { id } });
 
     // Return a success response
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.USER_DELETED,
-    });
+    return sendSuccessResponse(res, messageConstant.USER_DELETED);
 };

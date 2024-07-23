@@ -8,6 +8,7 @@ import dotenv from "dotenv";
 import Stripe from "stripe";
 import { calculateRefundAmount } from "../../utils/calculateRefund";
 import { Status } from "../../utils/enum";
+import { sendSuccessResponse } from "../../middleware/responseHandler";
 dotenv.config();
 
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET as string;
@@ -63,11 +64,7 @@ export const createPlan: Controller = async (req, res, next) => {
     });
 
     // Respond with success message and the created plan
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.PLAN_CREATED,
-        data: newPlan,
-    });
+    return sendSuccessResponse(res, messageConstant.PLAN_CREATED, newPlan);
 };
 
 // Define the retrievePlan controller
@@ -87,11 +84,7 @@ export const retrievePlan: Controller = async (req, res, next) => {
     const plan = await stripe.plans.retrieve(existingPlan.stripePlanId);
 
     // Send the retrieved plan details in the response
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.PLAN_RETRIEVED,
-        data: plan,
-    });
+    return sendSuccessResponse(res, messageConstant.PLAN_RETRIEVED, plan);
 };
 
 // Function to create a new subscription for a user
@@ -223,11 +216,7 @@ export const createSubscription: Controller = async (req, res, next) => {
                     status: Status.Active,
                 });
 
-                return res.status(httpCode.OK).json({
-                    status: httpCode.OK,
-                    message: messageConstant.SUBSCRIPTION_SCHEDULED,
-                    data: scheduledSubscription,
-                });
+                return sendSuccessResponse(res, messageConstant.SUBSCRIPTION_SCHEDULED, scheduledSubscription);
             }
         } else {
             // If no current subscription, create a new subscription immediately
@@ -254,11 +243,7 @@ export const createSubscription: Controller = async (req, res, next) => {
     }
 
     // Respond with success message and the created subscription
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.SUBSCRIPTION_CREATED,
-        data: subscription,
-    });
+    return sendSuccessResponse(res, messageConstant.SUBSCRIPTION_CREATED, subscription);
 };
 
 // Define the retrieveSubscription controller
@@ -276,11 +261,7 @@ export const retrieveSubscription: Controller = async (req, res, next) => {
     const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
 
     // Send the retrieved subscription details in the response
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.SUBSCRIPTION_RETRIEVED,
-        data: subscription,
-    });
+    return sendSuccessResponse(res, messageConstant.SUBSCRIPTION_RETRIEVED, subscription);
 };
 
 // Function to toggle the auto-renew option for a subscription
@@ -306,28 +287,20 @@ export const cancelSubscription: Controller = async (req, res, next) => {
     );
 
     // Respond with success message
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.SUBSCRIPTION_CANCELED,
-        data: subscription,
-    });
+    return sendSuccessResponse(res, messageConstant.SUBSCRIPTION_CANCELED, subscription);
 };
 
 export const cancelDirect: Controller = async (req, res, next) => {
     // Extract subscription id from request query parameters
-    const subId = req.query.subId as string;
+    const subscriptionId = req.query.subscriptionId as string;
 
-    const stripeSub = await stripe.subscriptions.cancel(subId, {
+    const stripeSub = await stripe.subscriptions.cancel(subscriptionId, {
         prorate: true,
     });
 
-    await Subscription.destroy({ where: { stripeSubscriptionId: subId } });
+    await Subscription.destroy({ where: { stripeSubscriptionId: subscriptionId } });
 
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.SUBSCRIPTION_CANCELED,
-        data: stripeSub,
-    });
+    return sendSuccessResponse(res, messageConstant.SUBSCRIPTION_CANCELED, stripeSub);
 };
 
 export const pauseCollection: Controller = async (req, res, next) => {
@@ -350,11 +323,7 @@ export const pauseCollection: Controller = async (req, res, next) => {
     });
 
     // Respond with a success message and the updated subscription data
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: "Subscription paused successfully.",
-        data: subscription,
-    });
+    return sendSuccessResponse(res, messageConstant.SUBSCRIPTION_PAUSED, subscription);
 };
 
 export const resumeSubscription: Controller = async (req, res, next) => {
@@ -379,11 +348,7 @@ export const resumeSubscription: Controller = async (req, res, next) => {
     existingSubscription.save();
 
     // Respond with a success message and the updated subscription data
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.SUBSCRIPTION_RESUMED,
-        data: subscription,
-    });
+    return sendSuccessResponse(res, messageConstant.SUBSCRIPTION_RESUMED, subscription);
 };
 
 export const webhook: Controller = async (req, res, next) => {
@@ -438,5 +403,5 @@ export const webhook: Controller = async (req, res, next) => {
             console.log(`Unhandled event type ${event.type}`);
     }
 
-    res.status(httpCode.OK).json({ status: httpCode.OK, message: "Received Webhook event" });
+    sendSuccessResponse(res, messageConstant.SUCCESS);
 };

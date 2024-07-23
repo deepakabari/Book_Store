@@ -5,6 +5,7 @@ import { Plan, TaxRate, User } from "../../../db/models";
 import { Controller } from "../../../interfaces";
 import stripe from "../../../db/config/stripe";
 import linkConstant from "../../../constants/link.constant";
+import { sendSuccessResponse } from "../../../middleware/responseHandler";
 
 export const createBillingSession: Controller = async (req, res, next) => {
     const { userId } = req.params;
@@ -20,11 +21,7 @@ export const createBillingSession: Controller = async (req, res, next) => {
         return_url: "https://localhost:4000/account",
     });
 
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: "Session created successfully.",
-        data: session,
-    });
+    return sendSuccessResponse(res, messageConstant.SESSION_CREATED, session);
 };
 
 export const checkoutSub: Controller = async (req, res, next) => {
@@ -61,11 +58,11 @@ export const checkoutSub: Controller = async (req, res, next) => {
     }
 
     // Respond with the session ID
-    res.json({ url: session.url });
+    sendSuccessResponse(res, messageConstant.SUCCESS, session.url);
 };
 
 export const createTaxRate: Controller = async (req, res, next) => {
-    const { displayName, description, jurisdiction, percentage, inclusive, country, state } = req.body;
+    const { displayName, description, jurisdiction, percentage, inclusive, country } = req.body;
 
     const existingTax = await TaxRate.findOne({
         where: { displayName },
@@ -92,11 +89,7 @@ export const createTaxRate: Controller = async (req, res, next) => {
         inclusive,
     });
 
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.TAX_RATE_CREATED,
-        data: newTaxRate,
-    });
+    return sendSuccessResponse(res, messageConstant.TAX_RATE_CREATED, newTaxRate);
 };
 
 export const retrieveTax: Controller = async (req, res, next) => {
@@ -109,9 +102,5 @@ export const retrieveTax: Controller = async (req, res, next) => {
 
     const taxRate = await stripe.taxRates.retrieve(tax.stripeTaxRateId);
 
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.TAX_RATE_RETRIEVED,
-        data: taxRate,
-    });
+    return sendSuccessResponse(res, messageConstant.TAX_RATE_RETRIEVED, taxRate);
 };

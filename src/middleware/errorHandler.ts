@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import httpCode from "../constants/http.constant";
 import messageConstant from "../constants/message.constant";
 import { logger } from "../utils/logger";
+import { sendJsonResponse } from "./responseHandler";
 
 export class ErrorHandler extends Error {
     public statusCode: number;
@@ -23,8 +24,5 @@ export const errorHandler = (error: any, req: Request, res: Response, next: Next
     // Log the error if needed
     logger.error(error);
 
-    res.status(statusCode).json({
-        status: statusCode,
-        message,
-    });
+    sendJsonResponse(res, statusCode, message);
 };

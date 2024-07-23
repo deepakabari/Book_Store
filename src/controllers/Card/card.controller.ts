@@ -7,6 +7,7 @@ import stripe from "../../db/config/stripe";
 import linkConstant from "../../constants/link.constant";
 import { sendEmailToSeller } from "../Book/book.controller";
 import { compileEmailTemplate } from "../../utils/hbsCompiler";
+import { sendHtmlResponse, sendSuccessResponse } from "../../middleware/responseHandler";
 
 // Way 2: 2. Controller to create a Stripe Checkout session for setting up payment methods
 export const createSession: Controller = async (req, res, next) => {
@@ -63,7 +64,7 @@ export const createSession: Controller = async (req, res, next) => {
     }
 
     // Respond with the session ID
-    res.json({ url: session.url });
+    return sendSuccessResponse(res, messageConstant.SUCCESS, session.url);
 };
 
 // Way 2: 3. Controller to handle the success URL callback after a successful payment method setup
@@ -152,10 +153,6 @@ export const success: Controller = async (req, res, next) => {
     // Compile the email template with provided data
     const htmlToSend = await compileEmailTemplate("payment_success", templateData);
 
-    // Set response headers to specify content type as HTML
-    res.setHeader("Content-Type", "text/html");
-
     // Send the compiled HTML email template as response
-    res.send(htmlToSend);
-    res.end();
+    sendHtmlResponse(res, htmlToSend);
 };

@@ -8,6 +8,7 @@ import { Controller } from "../../interfaces";
 import { ErrorHandler } from "../../middleware/errorHandler";
 import archiver from "archiver";
 import linkConstant from "../../constants/link.constant";
+import { badRequestResponse } from "../../middleware/responseHandler";
 
 /**
  * @function viewFile
@@ -100,10 +101,7 @@ export const downloadFiles: Controller = async (req, res, next) => {
                 name: fileName,
             });
         } else {
-            return res.status(httpCode.BAD_REQUEST).json({
-                status: httpCode.BAD_REQUEST,
-                message: messageConstant.FILE_NOT_FOUND,
-            });
+            return badRequestResponse(res, messageConstant.FILE_NOT_FOUND);
         }
     }
 

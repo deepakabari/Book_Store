@@ -4,6 +4,7 @@ import { ErrorHandler } from "../../../middleware/errorHandler";
 import { Discount } from "../../../db/models";
 import { Controller } from "../../../interfaces";
 import stripe from "../../../db/config/stripe";
+import { sendSuccessResponse } from "../../../middleware/responseHandler";
 
 export const createDiscount: Controller = async (req, res, next) => {
     const { name, description, percentage, minPrice, maxPercentage } = req.body;
@@ -35,9 +36,5 @@ export const createDiscount: Controller = async (req, res, next) => {
         isActive: true,
     });
 
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.DISCOUNT_CREATED,
-        data: discount,
-    });
+    return sendSuccessResponse(res, messageConstant.DISCOUNT_CREATED, discount);
 };

@@ -5,6 +5,7 @@ import httpCode from "../../constants/http.constant";
 import messageConstant from "../../constants/message.constant";
 import { sequelize } from "../../db/config/db.connection";
 import stripe from "../../db/config/stripe";
+import { sendSuccessResponse } from "../../middleware/responseHandler";
 
 export const addOrder: Controller = async (req, res, next) => {
     // Begin transaction to ensure atomicity
@@ -93,9 +94,5 @@ export const addOrder: Controller = async (req, res, next) => {
     // Commit transaction if all operations succeed
     await transaction.commit();
 
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.ORDER_CREATED,
-        data: newOrder,
-    });
+    return sendSuccessResponse(res, messageConstant.ORDER_CREATED, newOrder);
 };

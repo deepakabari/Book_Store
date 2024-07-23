@@ -1,7 +1,7 @@
 import messageConstant from "../../../constants/message.constant";
-import httpCode from "../../../constants/http.constant";
 import stripe from "../../../db/config/stripe";
 import { Controller } from "../../../interfaces";
+import { sendSuccessResponse } from "../../../middleware/responseHandler";
 
 const TEST_CLOCK_ID = process.env.TEST_CLOCK as string;
 
@@ -17,11 +17,7 @@ export const CreateTestClock: Controller = async (req, res, next) => {
     });
 
     // Return the created test clock in the response
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.TEST_CLOCK_CREATED,
-        data: testClock,
-    });
+    return sendSuccessResponse(res, messageConstant.TEST_CLOCK_CREATED, testClock);
 };
 
 // Controller to advance an existing test clock to a new date
@@ -41,9 +37,5 @@ export const advanceTestClock: Controller = async (req, res, next) => {
     });
 
     // Return the advanced test clock in the response
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.TEST_CLOCK_CREATED,
-        data: testClock,
-    });
+    return sendSuccessResponse(res, messageConstant.TEST_CLOCK_CREATED, testClock);
 };

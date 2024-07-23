@@ -10,6 +10,7 @@ import { compileEmailTemplate } from "../../utils/hbsCompiler";
 import { sendEmail } from "../../utils/email";
 import { Op } from "sequelize";
 import { ErrorHandler } from "../../middleware/errorHandler";
+import { sendSuccessResponse } from "../../middleware/responseHandler";
 
 const SECRET = process.env.SECRET;
 const EXPIRESIN = process.env.EXPIRESIN;
@@ -58,11 +59,7 @@ export const login: Controller = async (req, res, next) => {
             },
         );
 
-        return res.json({
-            status: httpCode.OK,
-            message: messageConstant.LOGIN_SUCCESS,
-            data: token,
-        });
+        return sendSuccessResponse(res, messageConstant.LOGIN_SUCCESS, token);
     } else {
         return next(new ErrorHandler(httpCode.UNAUTHORIZED, messageConstant.WRONG_PASSWORD));
     }
@@ -126,10 +123,7 @@ export const forgotPassword: Controller = async (req, res, next) => {
         html: data,
     });
 
-    return res.json({
-        status: httpCode.OK,
-        message: messageConstant.RESET_EMAIL_SENT,
-    });
+    return sendSuccessResponse(res, messageConstant.RESET_EMAIL_SENT);
 };
 
 /**
@@ -177,8 +171,5 @@ export const resetPassword: Controller = async (req, res, next) => {
     );
 
     // return success response if password was updated
-    return res.json({
-        status: httpCode.OK,
-        message: messageConstant.PASSWORD_RESET,
-    });
+    return sendSuccessResponse(res, messageConstant.PASSWORD_RESET);
 };

@@ -8,8 +8,8 @@ import { ErrorHandler } from "../../middleware/errorHandler";
 import { compileEmailTemplate } from "../../utils/hbsCompiler";
 import { sendEmail } from "../../utils/email";
 import bcrypt from "bcrypt";
-import { Stripe } from "stripe";
 import linkConstant from "../../constants/link.constant";
+import { sendSuccessResponse, sendHtmlResponse } from "../../middleware/responseHandler";
 dotenv.config();
 
 const ITERATION = process.env.ITERATION;
@@ -47,11 +47,7 @@ export const createCustomer: Controller = async (req, res, next) => {
     }
 
     // Respond with the created Stripe customer ID
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.CUSTOMER_CREATE,
-        data: stripeCustomer,
-    });
+    return sendSuccessResponse(res, messageConstant.CUSTOMER_CREATE, stripeCustomer);
 };
 
 // All way: create card holder in stripe
@@ -103,11 +99,7 @@ export const addCardHolder: Controller = async (req, res, next) => {
     await User.update({ cardHolderId: cardholder.id }, { where: { id: userId } });
 
     // Respond with the created cardholder details
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.CARD_HOLDER_SAVED,
-        data: cardholder,
-    });
+    return sendSuccessResponse(res, messageConstant.CARD_HOLDER_SAVED, cardholder);
 };
 
 // All way: create virtual card using card holder in stripe
@@ -148,11 +140,7 @@ export const addCard: Controller = async (req, res, next) => {
     }
 
     // Respond with success message and data of the activated card
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.CARD_SAVED,
-        data: cardActivated,
-    });
+    return sendSuccessResponse(res, messageConstant.CARD_SAVED, cardActivated);
 };
 
 // Way 1: 3.Called after virtual card creation to send email link of frontend payment page
@@ -183,10 +171,7 @@ export const sendPaymentLink: Controller = async (req, res, next) => {
         html: htmlToSend,
     });
 
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.SUCCESS,
-    });
+    return sendSuccessResponse(res, messageConstant.SUCCESS);
 };
 
 // Way 1: 4.Open fill card details page and submit card details
@@ -203,12 +188,8 @@ export const openPaymentForm: Controller = async (req, res, next) => {
     // Compile the email template with provided data
     const htmlToSend = await compileEmailTemplate("payment-form", templateData);
 
-    // Set response headers to specify content type as HTML
-    res.setHeader("Content-Type", "text/html");
-
     // Send the compiled HTML email template as response
-    res.send(htmlToSend);
-    return res.end();
+    return sendHtmlResponse(res, htmlToSend);
 };
 
 // Way 1: 5.This API called directly from frontend when user submit their card details
@@ -260,11 +241,7 @@ export const createPaymentMethod: Controller = async (req, res, next) => {
     });
 
     // Respond with success message and data
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.PAYMENT_METHOD_CREATED,
-        data: paymentMethod1,
-    });
+    return sendSuccessResponse(res, messageConstant.PAYMENT_METHOD_CREATED, paymentMethod1);
 };
 
 // Way 3: 3. Create authorization to authorize a payment
@@ -315,11 +292,7 @@ export const authorization: Controller = async (req, res, next) => {
     });
 
     // Send a success response with the authorization data
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.AUTHORIZED_SUCCESS,
-        data: authorization,
-    });
+    return sendSuccessResponse(res, messageConstant.AUTHORIZED_SUCCESS, authorization);
 };
 
 // Way 3. 4. Create capture for respective authorization
@@ -331,9 +304,5 @@ export const capture: Controller = async (req, res, next) => {
     const authorization = await stripe.testHelpers.issuing.authorizations.capture(authId);
 
     // Send a success response with the captured authorization data
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.AUTHORIZED_SUCCESS,
-        data: authorization,
-    });
+    return sendSuccessResponse(res, messageConstant.AUTHORIZED_SUCCESS, authorization);
 };

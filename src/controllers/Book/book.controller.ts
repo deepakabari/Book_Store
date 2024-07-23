@@ -11,6 +11,7 @@ import { Op } from "sequelize";
 import { sendEmail } from "../../utils/email";
 import linkConstant from "../../constants/link.constant";
 import { compileEmailTemplate } from "../../utils/hbsCompiler";
+import { sendSuccessResponse } from "../../middleware/responseHandler";
 
 /**
  * @function getAllBooks
@@ -54,11 +55,7 @@ export const getAllBooks: Controller = async (req, res, next) => {
     }
 
     // Return response with block history data
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.BOOK_RETRIEVED,
-        data: getAllBooks,
-    });
+    return sendSuccessResponse(res, messageConstant.BOOK_RETRIEVED, getAllBooks);
 };
 
 /**
@@ -80,11 +77,7 @@ export const getBookById: Controller = async (req, res, next) => {
         return next(new ErrorHandler(httpCode.NOT_FOUND, messageConstant.BOOK_NOT_FOUND));
     }
 
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.BOOK_RETRIEVED,
-        data: existingBook,
-    });
+    return sendSuccessResponse(res, messageConstant.BOOK_RETRIEVED, existingBook);
 };
 
 /**
@@ -125,11 +118,7 @@ export const getBooks: Controller = async (req, res, next) => {
         return next(new ErrorHandler(httpCode.NOT_FOUND, messageConstant.BOOK_NOT_FOUND));
     }
 
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.BOOK_RETRIEVED,
-        data: getBooks,
-    });
+    return sendSuccessResponse(res, messageConstant.BOOK_RETRIEVED, getBooks);
 };
 
 /**
@@ -182,11 +171,7 @@ export const createBook: Controller = async (req, res, next) => {
     }
 
     // If book is created successfully, send an OK response with the new book data
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.BOOK_CREATED,
-        data: newBook,
-    });
+    return sendSuccessResponse(res, messageConstant.BOOK_CREATED, newBook);
 };
 
 /**
@@ -244,10 +229,7 @@ export const updateBook: Controller = async (req, res, next) => {
     );
 
     // If update is successful, send an OK response
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.BOOK_UPDATED,
-    });
+    return sendSuccessResponse(res, messageConstant.BOOK_UPDATED);
 };
 
 /**
@@ -284,10 +266,7 @@ export const deleteBook: Controller = async (req, res, next) => {
         where: { id },
     });
 
-    return res.status(httpCode.OK).json({
-        status: httpCode.OK,
-        message: messageConstant.BOOK_DELETED,
-    });
+    return sendSuccessResponse(res, messageConstant.BOOK_DELETED);
 };
 
 export const sendEmailToSeller = async (email: string, book: Book, isOutOfStock: boolean) => {
