@@ -77,3 +77,5 @@ dbConnection()
     .catch((error) => {
         logger.error(`[Server]: Failed to connect to the database - ${error.message}`);
     });
+
+export { app };

@@ -7,13 +7,12 @@ export const UserSchema = {
             firstName: Joi.string().required(),
             lastName: Joi.string().required(),
             email: Joi.string().email().required(),
-            password: Joi.string().regex(RegExp(linkConstant.PASSWORD_REGEX)).required(),
+            password: Joi.string()
+                .regex(RegExp("^(?=.*[!@#$%^&*(),.?:{}|<>])(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,16}$"))
+                .required(),
             confirmPassword: Joi.string().valid(Joi.ref("password")).required(),
             userRoleId: Joi.number().required(),
-            phoneNumber: Joi.string()
-                .min(10)
-                .max(10)
-                .required(),
+            phoneNumber: Joi.string().min(10).max(10).required(),
         }),
     },
 };
